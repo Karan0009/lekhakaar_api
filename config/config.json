@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "fabnest-test",
+    "password": "fabnest-test",
+    "database": "lekhakaar",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "fabnest-test",
+    "password": "fabnest-test",
+    "database": "lekhakaar",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "fabnest-test",
+    "password": "fabnest-test",
+    "database": "lekhakaar",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  }
+}
