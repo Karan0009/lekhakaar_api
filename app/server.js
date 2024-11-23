@@ -20,8 +20,8 @@ app.use(router);
 
 (async () => {
   try {
-    // await sequelize.authenticate();
-    const sql = await sequelize.sync({ alter: true });
+    await sequelize.authenticate();
+    // const sql = await sequelize.sync({ alter: true });
   } catch (error) {
     logger.error('Unable to connect to the database', { error });
   }
