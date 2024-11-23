@@ -1,8 +1,8 @@
 const WA_MESSAGE_TEMPLATES = {
   defaultMessage: `*Hey, please send any of the following options*
-    *1. register = Register yourself in the app*
-    *2. summary = summary of the transactions*
-    *3. contact = contact us*
+    *1. Register yourself in the app*
+    *2. summary of the transactions*
+    *3. contact us*
     
 After registering you can start sending your transactions by following ways
     1. share the transaction from payment applications
