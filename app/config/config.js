@@ -11,6 +11,7 @@ const defaultConfig = {
     database: process.env.PG_DB_NAME || 'lekhakaar',
     host: process.env.PG_DB_HOST || 'localhost',
     port: process.env.PG_DB_PORT || 5432,
+    ssl: process.env.PG_DB_SSL_MODE == 'true',
     dialect: 'postgres',
     replication: {
       write: {

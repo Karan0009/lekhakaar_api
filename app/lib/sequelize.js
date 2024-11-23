@@ -2,7 +2,7 @@ import { Sequelize } from 'sequelize';
 import config from '../config/config.js';
 import { LoggerFactory } from './logger.js';
 
-const { username, password, database, host, dialect } = config.PG_DATABASE;
+const { username, password, database, host, dialect, ssl } = config.PG_DATABASE;
 
 const logger = new LoggerFactory('sequelize').logger;
 const __dirname = import.meta.dirname;
@@ -10,6 +10,9 @@ const __dirname = import.meta.dirname;
 const sequelize = new Sequelize(database, username, password, {
   host,
   dialect,
+  dialectOptions: {
+    ssl: ssl,
+  },
   benchmark: true,
   timezone: '+00:00',
   define: {
