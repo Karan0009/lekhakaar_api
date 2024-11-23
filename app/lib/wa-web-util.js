@@ -21,6 +21,10 @@ class WhatsAppWebBot {
     this.logger = new LoggerFactory('WhatsAppWebBot').logger;
     try {
       this.client = new Client({
+        puppeteer: {
+          headless: true,
+          args: ['--no-sandbox'],
+        },
         authStrategy: new LocalAuth(),
       });
 
