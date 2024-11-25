@@ -1,6 +1,7 @@
 import Category from './category.js';
 import RawTransaction from './raw_transaction.js';
 import Session from './session.js';
+import TestSeriesRawQuestion from './test_series_raw_question.js';
 import Transaction from './transaction.js';
 import User from './user.js';
 
@@ -11,6 +12,7 @@ const models = {
   Category,
   RawTransaction,
   Session,
+  TestSeriesRawQuestion,
 };
 
 models.User.hasMany(models.Transaction, { foreignKey: 'user_id' });

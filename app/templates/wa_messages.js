@@ -23,6 +23,10 @@ Start sending transactions our way 🤝`,
     media_download_error: `Error in processing this transacation, Please try again`,
     one_day_maxed_out: `Whoa there, speed racer! You've hit today’s limit. But don't worry, the message fairy will refill your stash tomorrow. 📨✨`,
   },
+
+  testSeries: {
+    input_received: `Added ✅`,
+  },
 };
 
 export default WA_MESSAGE_TEMPLATES;

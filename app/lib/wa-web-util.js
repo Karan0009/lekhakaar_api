@@ -12,6 +12,7 @@ import {
   RAW_TRANSACTION_STATUSES,
   RAW_TRANSACTION_TYPE,
 } from '../models/raw_transaction.js';
+import testSeriesService from '../services/test_series_service.js';
 
 const writeFileAsync = promisify(fs.writeFile);
 const { Client, LocalAuth } = pkg;
@@ -89,11 +90,33 @@ class WhatsAppWebBot {
 
           return;
         }
-        this.logger.info('has media', { media: message.hasMedia });
         let downloadMediaRes = null;
         if (message.hasMedia) {
           downloadMediaRes = await this.downloadMedia(phoneNumber, message);
         }
+
+        // * if user is Aashi
+        if (user.id === 'fa4ebfb0-aa82-11ef-990b-037e8c7d24b0') {
+          const newRawQuestionData = {
+            raw_question_data: message.hasMedia ? downloadMediaRes : 'no data',
+          };
+          const newRawQuestion = await testSeriesService.addRawQuestion(
+            newRawQuestionData,
+          );
+
+          this.logger.info('new test series question added successfully', {
+            newRawQuestion,
+          });
+          // TODO: WRITE A CRON TO PROCESS unprocessed raw questions by ai
+          await this.sendMessage(
+            message.from,
+            WA_MESSAGE_TEMPLATES.testSeries.input_received,
+          );
+          return;
+        }
+
+        // * if any other user, perform following actions
+
         const newRawTransactionData = {
           user_id: user.id,
           raw_transaction_type: message.hasMedia
