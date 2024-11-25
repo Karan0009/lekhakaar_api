@@ -175,7 +175,8 @@ class WhatsAppWebBot {
         throw new Error('media is not an image');
       }
 
-      const mediaFolderPath = '../../uploads';
+      const mediaFolderName = 'uploads';
+      const mediaFolderPath = `../../${mediaFolderName}`;
       if (!fs.existsSync(mediaFolderPath)) {
         fs.mkdirSync(mediaFolderPath, { recursive: true });
       }
@@ -183,7 +184,7 @@ class WhatsAppWebBot {
         media.filename || `${phoneNumber}_trxn_${Date.now()}`; // Fallback in case filename is not available
       const fileExtension = media.mimetype.split('/')[1]; // Extract file extension from mimetype
       const fileFolderPath = join(
-        mediaFolderPath,
+        mediaFolderName,
         `${mediaFilename}.${fileExtension}`,
       );
       const filePath = join(
