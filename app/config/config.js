@@ -42,7 +42,7 @@ const defaultConfig = {
     password: process.env.REDIS_PASSWORD,
     db: process.env.REDIS_DB || 0, // Defaults to 0
   },
-  MAX_RAW_TRANSACTIONS_LIMIT: 20,
+  MAX_RAW_TRANSACTIONS_LIMIT: 100,
 };
 
 const config = { ...defaultConfig };
