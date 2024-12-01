@@ -97,47 +97,12 @@ class WhatsAppWebBot {
 
         // * if user is Aashi
         if (user.id === 'fa4ebfb0-aa82-11ef-990b-037e8c7d24b0') {
-          const newRawQuestionData = {
-            raw_question_data: message.hasMedia ? downloadMediaRes : 'no data',
-          };
-          const newRawQuestion = await testSeriesService.addRawQuestion(
-            newRawQuestionData,
-          );
-
-          this.logger.info('new test series question added successfully', {
-            newRawQuestion,
-          });
-          // TODO: WRITE A CRON TO PROCESS unprocessed raw questions by ai
-          await this.sendMessage(
-            message.from,
-            WA_MESSAGE_TEMPLATES.testSeries.input_received,
-          );
+          await this.testSeriesMessageHandler(message, downloadMediaRes);
           return;
         }
 
+        await this.transactionMessageHandler(message, downloadMediaRes);
         // * if any other user, perform following actions
-
-        const newRawTransactionData = {
-          user_id: user.id,
-          raw_transaction_type: message.hasMedia
-            ? RAW_TRANSACTION_TYPE.WA_IMAGE
-            : RAW_TRANSACTION_TYPE.WA_TEXT,
-          raw_transaction_data: message.hasMedia
-            ? downloadMediaRes
-            : message.body,
-          status: RAW_TRANSACTION_STATUSES.PENDING,
-        };
-        const newRawTransaction = await rawTransactionService.addRawTransaction(
-          newRawTransactionData,
-        );
-        this.logger.info('new transaction added successfully', {
-          newRawTransaction,
-        });
-        // TODO: WRITE A CRON TO PROCESS unprocessed raw transactions by ai
-        await this.sendMessage(
-          message.from,
-          WA_MESSAGE_TEMPLATES.transactions.input_received,
-        );
       } else {
         await this.sendMessage(
           message.from,
@@ -147,6 +112,58 @@ class WhatsAppWebBot {
     } catch (error) {
       this.logger.error('error in handle message', { error });
       this.sendMessage(message.from, WA_MESSAGE_TEMPLATES.defaultErrorMessage);
+    }
+  }
+
+  async testSeriesMessageHandler(message, downloadMediaRes) {
+    try {
+      const newRawQuestionData = {
+        raw_question_data: message.hasMedia ? downloadMediaRes : 'no data',
+      };
+      const newRawQuestion = await testSeriesService.addRawQuestion(
+        newRawQuestionData,
+      );
+
+      this.logger.info('new test series question added successfully', {
+        newRawQuestion,
+      });
+      // TODO: WRITE A CRON TO PROCESS unprocessed raw questions by ai
+      // await this.sendMessage(
+      //   message.from,
+      //   WA_MESSAGE_TEMPLATES.testSeries.input_received,
+      // );
+    } catch (error) {
+      this.logger.error('error in testSeriesMessageHandler', { error });
+      throw error;
+    }
+  }
+
+  async transactionMessageHandler(message, downloadMediaRes) {
+    try {
+      const newRawTransactionData = {
+        user_id: user.id,
+        raw_transaction_type: message.hasMedia
+          ? RAW_TRANSACTION_TYPE.WA_IMAGE
+          : RAW_TRANSACTION_TYPE.WA_TEXT,
+        raw_transaction_data: message.hasMedia
+          ? downloadMediaRes
+          : message.body,
+        status: RAW_TRANSACTION_STATUSES.PENDING,
+      };
+      const newRawTransaction = await rawTransactionService.addRawTransaction(
+        newRawTransactionData,
+      );
+      this.logger.info('new transaction added successfully', {
+        newRawTransaction,
+      });
+      // TODO: WRITE A CRON TO PROCESS unprocessed raw transactions by ai
+      await this.sendMessage(
+        message.from,
+        WA_MESSAGE_TEMPLATES.transactions.input_received,
+      );
+    } catch (error) {
+      this.logger.error('error in transactionMessageHandler', { error });
+      throw error;
     }
   }
 

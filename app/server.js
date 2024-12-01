@@ -6,7 +6,6 @@ import { LoggerFactory } from './lib/logger.js';
 import { createNamespace } from 'cls-hooked';
 import config from './config/config.js';
 import setRequestId from './middlewares/set_request_id.js';
-import redis from './lib/redis.js';
 
 cors();
 

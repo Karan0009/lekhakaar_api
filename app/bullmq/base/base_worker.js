@@ -1,8 +1,12 @@
 import { Worker } from 'bullmq';
-import redis from '../../lib/redis';
-import { LoggerFactory } from '../../lib/logger';
+import redis from '../../lib/redis.js';
+import { LoggerFactory } from '../../lib/logger.js';
 
 export default class BaseWorker {
+  /**
+   *
+   * @param {{queueName:string,workerOptions:import('bullmq').WorkerOptions}} data
+   */
   constructor({ queueName, workerOptions = {} }) {
     this.queueName = queueName;
     this.workerOptions = workerOptions;

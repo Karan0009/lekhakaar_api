@@ -43,6 +43,10 @@ const defaultConfig = {
     db: process.env.REDIS_DB || 0, // Defaults to 0
   },
   MAX_RAW_TRANSACTIONS_LIMIT: 100,
+  BULL_UI_PATH: '/bullui',
+  BULL_MQ_QUEUES: {
+    testSeriesQuestionsQueue: 'test-series-questions-queue',
+  },
 };
 
 const config = { ...defaultConfig };

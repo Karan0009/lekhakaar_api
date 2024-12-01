@@ -11,6 +11,7 @@ const redis = new Redis({
   username: config.REDIS.username,
   password: config.REDIS.password,
   db: config.REDIS.db,
+  maxRetriesPerRequest: null,
 });
 
 redis.on('connect', () => {
