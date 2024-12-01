@@ -101,7 +101,7 @@ class WhatsAppWebBot {
           return;
         }
 
-        await this.transactionMessageHandler(message, downloadMediaRes);
+        await this.transactionMessageHandler(user, message, downloadMediaRes);
         // * if any other user, perform following actions
       } else {
         await this.sendMessage(
@@ -138,7 +138,7 @@ class WhatsAppWebBot {
     }
   }
 
-  async transactionMessageHandler(message, downloadMediaRes) {
+  async transactionMessageHandler(user, message, downloadMediaRes) {
     try {
       const newRawTransactionData = {
         user_id: user.id,
