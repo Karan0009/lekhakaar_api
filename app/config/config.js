@@ -47,6 +47,7 @@ const defaultConfig = {
   BULL_MQ_QUEUES: {
     testSeriesQuestionsQueue: 'test-series-questions-queue',
   },
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
 };
 
 const config = { ...defaultConfig };

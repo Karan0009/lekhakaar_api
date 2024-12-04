@@ -1,5 +1,6 @@
 import config from '../../config/config.js';
 import BaseWorker from '../base/base_worker.js';
+import TestSeriesQuestionsJob from '../jobs/test_series_questions_job.js';
 
 export default class TestSeriesQuestionsProcessor extends BaseWorker {
   constructor() {
@@ -16,9 +17,10 @@ export default class TestSeriesQuestionsProcessor extends BaseWorker {
    *
    * @param {Job} job
    */
-  jobProcessor(job) {
-    this.logger.info(
-      `this ran starting processing job of ${job.name} with #${job.id}`,
-    );
+  async jobProcessor(job) {
+    await new TestSeriesQuestionsJob().process();
+    // this.logger.info(
+    //   `this ran starting processing job of ${job.name} with #${job.id}`,
+    // );
   }
 }

@@ -8,7 +8,7 @@ export default class BaseJob {
    * @param {{queueName:string,jobOptions:import('bullmq').JobsOptions}} data
    */
   constructor({ queueName, jobOptions }) {
-    this.logger = new LoggerFactory('BaseJob').logger;
+    this.logger = new LoggerFactory(`BaseJob-${queueName}`).logger;
     this.queue = new Queue(queueName, {
       connection: redis,
       defaultJobOptions: jobOptions,
@@ -23,7 +23,11 @@ export default class BaseJob {
     this.queue.add(`${this.queue.name}-job`, data);
   }
 
-  onError(err) {
+  async onError(err) {
     this.logger.error('error occured in processing job', { error: err });
+  }
+
+  async process(jobData) {
+    // * IMPLEMENT IN THE CHILD CLASS
   }
 }

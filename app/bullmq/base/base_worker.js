@@ -10,7 +10,7 @@ export default class BaseWorker {
   constructor({ queueName, workerOptions = {} }) {
     this.queueName = queueName;
     this.workerOptions = workerOptions;
-    this.logger = new LoggerFactory('BaseWorker').logger;
+    this.logger = new LoggerFactory(`BaseWorker-${queueName}`).logger;
   }
 
   setupWorker() {
@@ -24,7 +24,7 @@ export default class BaseWorker {
    *
    * @param {Job} job
    */
-  jobProcessor(job) {
+  async jobProcessor(job) {
     this.logger.info(`starting processing job of ${job.name} with #${job.id}`);
   }
 }
