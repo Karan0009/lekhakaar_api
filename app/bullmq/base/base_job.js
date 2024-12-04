@@ -20,7 +20,7 @@ export default class BaseJob {
   }
 
   add(data) {
-    this.queue.add(`${this.queue.name}-job`, data);
+    return this.queue.add(`${this.queue.name}-job`, data);
   }
 
   async onError(err) {
