@@ -10,7 +10,7 @@ class CronChecker {
     try {
       const testSeriesQuestionsJob = new TestSeriesQuestionsJob();
       const testSeriesQuestionsJobs =
-        await testSeriesQuestionsQueue.queue.getActiveCount();
+        await testSeriesQuestionsJob.queue.getActiveCount();
 
       if (testSeriesQuestionsJobs === 0) {
         this.logger.info('testSeriesQuestionsJob has 0 jobs, adding new job');
