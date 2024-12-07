@@ -6,6 +6,12 @@ class CronChecker {
     this.logger = new LoggerFactory('CronChecker').logger;
   }
 
+  async startCronChecker(ms) {
+    setTimeout(async function () {
+      await this.addCronJobsIfNotAlreadyAdded();
+    }, ms);
+  }
+
   async addCronJobsIfNotAlreadyAdded() {
     try {
       const testSeriesQuestionsJob = new TestSeriesQuestionsJob();

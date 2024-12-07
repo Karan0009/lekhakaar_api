@@ -19,8 +19,5 @@ export default class TestSeriesQuestionsProcessor extends BaseWorker {
    */
   async jobProcessor(job) {
     await new TestSeriesQuestionsJob().process();
-    // this.logger.info(
-    //   `this ran starting processing job of ${job.name} with #${job.id}`,
-    // );
   }
 }

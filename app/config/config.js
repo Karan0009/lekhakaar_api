@@ -46,8 +46,14 @@ const defaultConfig = {
   BULL_UI_PATH: '/bullui',
   BULL_MQ_QUEUES: {
     testSeriesQuestionsQueue: 'test-series-questions-queue',
+    testSeriesQuestionsBatchesQueue: 'test-series-questions-batches-queue',
   },
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
+  TEST_SERIES_QUESTIONS_JOB_BATCH_SIZE: 2,
+  TEST_SERIES_QUESTIONS_BATCHES_JOB_BATCH_SIZE: 3,
+  times: {
+    mins_30_in_ms: 1800000,
+  },
 };
 
 const config = { ...defaultConfig };
