@@ -1,7 +1,7 @@
 import config from '../../config/config.js';
 import BaseJob from '../base/base_job.js';
 import { join } from 'node:path';
-import { writeFile, mkdir } from 'node:fs/promises';
+import { writeFile, mkdir, unlink } from 'node:fs/promises';
 import fs from 'fs';
 import TestSeriesRawQuestion, {
   TEST_SERIES_RAW_QUESTION_STATUSES,
@@ -31,32 +31,31 @@ export default class TestSeriesQuestionsJob extends BaseJob {
     let sqlTransaction;
     try {
       this.logger.info('job ran', { jobData });
-      sqlTransaction = await sequelize.transaction();
-      const pendingQuestions = await this.getPendingQuestions(sqlTransaction);
+      //   sqlTransaction = await sequelize.transaction();
+      const pendingQuestions = await this.getPendingQuestions();
       await this.setTestSeriesQuestionStatus(
         pendingQuestions.map((q) => q.id),
         TEST_SERIES_RAW_QUESTION_STATUSES.PROCESSING,
-        sqlTransaction,
       );
 
-      await this.createBatchFile(pendingQuestions, sqlTransaction);
+      const batchResponse = await this.createBatchFile(pendingQuestions);
 
-      await this.setTestSeriesQuestionStatus(
-        pendingQuestions.map((q) => q.id),
-        TEST_SERIES_RAW_QUESTION_STATUSES.PROCESSED,
-        sqlTransaction,
-      );
+      if (!batchResponse || !batchResponse?.fileUploadSuccess) {
+        await this.setTestSeriesQuestionStatus(
+          pendingQuestions.map((q) => q.id),
+          TEST_SERIES_RAW_QUESTION_STATUSES.PENDING,
+        );
+      }
 
       await sqlTransaction.commit();
     } catch (error) {
       await this.setTestSeriesQuestionStatus(
         pendingQuestions.map((q) => q.id),
         TEST_SERIES_RAW_QUESTION_STATUSES.PENDING,
-        sqlTransaction,
       );
-      if (sqlTransaction) {
-        await sqlTransaction.rollback();
-      }
+      //   if (sqlTransaction) {
+      //     await sqlTransaction.rollback();
+      //   }
       this.logger.error('error in process', { error });
       throw error;
     }
@@ -152,20 +151,38 @@ export default class TestSeriesQuestionsJob extends BaseJob {
         });
       }
       const localFilePath = join(__dirname, '../../../', batchFilePath);
-      // TODO: SHOULD DELETE THIS SAVED FILE IF BELOW API CALL FAILES OR CREATE AN ENTRY IN DB AND TRY UPLOADING FILE AGAIN IN A CRON
-      const fileUploadRes = await openaiClient.files.create({
-        file: fs.createReadStream(localFilePath),
-        purpose: 'batch',
-      });
+      let fileUploadRes;
+      try {
+        fileUploadRes = await openaiClient.files.create({
+          file: fs.createReadStream(localFilePath),
+          purpose: 'batch',
+        });
+      } catch (error) {
+        await unlink(batchFilePath);
+        this.logger.error('error in uploading batch file', { error });
+        return { fileUploadSuccess: false, batchJobSuccess: false };
+      }
       await newBatch.update({ file_path: batchFilePath, meta: fileUploadRes });
-      const batchJob = await openaiClient.batches.create({
-        input_file_id: fileUploadRes.id,
-        endpoint: '/v1/chat/completions',
-        completion_window: '24h',
-      });
+
+      let batchJob;
+      try {
+        batchJob = await openaiClient.batches.create({
+          input_file_id: fileUploadRes.id,
+          endpoint: '/v1/chat/completions',
+          completion_window: '24h',
+        });
+      } catch (error) {
+        this.logger.error('error in creating batch job', { error });
+        return { fileUploadSuccess: true, batchJobSuccess: false };
+      }
+
       await newBatch.update({ batchJob: batchJob });
 
-      return newBatch;
+      return {
+        fileUploadSuccess: true,
+        batchJobSuccess: true,
+        batch: newBatch,
+      };
     } catch (error) {
       if (newBatch) {
         await newBatch.update({ status: OPENAI_BATCH_STATUS.FAILED });
