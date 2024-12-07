@@ -48,7 +48,7 @@ export default class TestSeriesQuestionsJob extends BaseJob {
         );
       }
 
-      await sqlTransaction.commit();
+      //   await sqlTransaction.commit();
     } catch (error) {
       await this.setTestSeriesQuestionStatus(
         pendingQuestions.map((q) => q.id),
