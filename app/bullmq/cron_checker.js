@@ -7,7 +7,9 @@ class CronChecker {
   }
 
   async startCronChecker(ms) {
-    setTimeout(async function () {
+    // start the first time and then check every on every ms interval
+    await this.addCronJobsIfNotAlreadyAdded();
+    setInterval(async function () {
       await this.addCronJobsIfNotAlreadyAdded();
     }, ms);
   }
