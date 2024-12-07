@@ -177,7 +177,7 @@ export default class TestSeriesQuestionsJob extends BaseJob {
         return { fileUploadSuccess: true, batchJobSuccess: false };
       }
 
-      await newBatch.update({ batchJob: batchJob });
+      await newBatch.update({ batch_job: batchJob });
 
       return {
         fileUploadSuccess: true,
