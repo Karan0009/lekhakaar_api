@@ -140,7 +140,7 @@ export default class TestSeriesQuestionsJob extends BaseJob {
       }
 
       const batchFolderName = 'openai_batch_files';
-      const batchFolderPath = `../../../${batchFolderName}`;
+      const batchFolderPath = join(__dirname, `../../../${batchFolderName}`);
       if (!fs.existsSync(batchFolderPath)) {
         await mkdir(batchFolderPath, { recursive: true });
       }
