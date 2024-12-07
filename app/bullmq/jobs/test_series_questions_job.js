@@ -29,10 +29,11 @@ export default class TestSeriesQuestionsJob extends BaseJob {
 
   async process(jobData) {
     let sqlTransaction;
+    let pendingQuestions = [];
     try {
       this.logger.info('job ran', { jobData });
       //   sqlTransaction = await sequelize.transaction();
-      const pendingQuestions = await this.getPendingQuestions();
+      pendingQuestions = await this.getPendingQuestions();
       await this.setTestSeriesQuestionStatus(
         pendingQuestions.map((q) => q.id),
         TEST_SERIES_RAW_QUESTION_STATUSES.PROCESSING,
