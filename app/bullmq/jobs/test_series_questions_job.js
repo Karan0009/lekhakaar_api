@@ -1,7 +1,7 @@
 import config from '../../config/config.js';
 import BaseJob from '../base/base_job.js';
 import { join } from 'node:path';
-import { writeFile } from 'node:fs/promises';
+import { writeFile, mkdir } from 'node:fs/promises';
 import fs from 'fs';
 import TestSeriesRawQuestion, {
   TEST_SERIES_RAW_QUESTION_STATUSES,
@@ -140,6 +140,10 @@ export default class TestSeriesQuestionsJob extends BaseJob {
       }
 
       const batchFolderName = 'openai_batch_files';
+      const batchFolderPath = `../../../${batchFolderName}`;
+      if (!fs.existsSync(batchFolderPath)) {
+        await mkdir(batchFolderPath, { recursive: true });
+      }
       const batchFilePath = `${batchFolderName}/test_series_questions_batch_${newBatch.id}.jsonl`;
 
       for (let i = 0; i < tasks.length; ++i) {
