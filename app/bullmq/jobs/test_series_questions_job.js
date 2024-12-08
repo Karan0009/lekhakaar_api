@@ -41,7 +41,10 @@ export default class TestSeriesQuestionsJob extends BaseJob {
 
       const batchResponse = await this.createBatchFile(pendingQuestions);
 
-      if (!batchResponse || !batchResponse?.fileUploadSuccess) {
+      if (
+        pendingQuestions.length > 0 &&
+        (!batchResponse || !batchResponse?.fileUploadSuccess)
+      ) {
         await this.setTestSeriesQuestionStatus(
           pendingQuestions.map((q) => q.id),
           TEST_SERIES_RAW_QUESTION_STATUSES.PENDING,
@@ -97,6 +100,8 @@ export default class TestSeriesQuestionsJob extends BaseJob {
   async createBatchFile(pendingQuestions, transaction) {
     let newBatch;
     try {
+      if (pendingQuestions.length === 0) return null;
+
       const tasks = [];
       newBatch = await OpenaiBatch.create({});
       for (let i = 0; i < pendingQuestions.length; ++i) {

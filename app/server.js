@@ -6,15 +6,17 @@ import { LoggerFactory } from './lib/logger.js';
 import { createNamespace } from 'cls-hooked';
 import config from './config/config.js';
 import setRequestId from './middlewares/set_request_id.js';
+import { join } from 'node:path';
 
 cors();
-
+const __dirname = import.meta.dirname;
 const app = express();
 const logger = new LoggerFactory('server.js').logger;
 createNamespace(`${config.APP_NAME}-req-context`);
 
 app.use(express.json());
 app.use(setRequestId);
+app.use('/static', express.static(join(__dirname, '../uploads')));
 app.use(router);
 
 (async () => {
