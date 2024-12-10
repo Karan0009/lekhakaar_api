@@ -23,5 +23,8 @@ models.User.hasMany(models.Transaction, { foreignKey: 'user_id' });
 models.User.hasMany(models.RawTransaction, { foreignKey: 'user_id' });
 models.User.hasMany(models.Category, { foreignKey: 'user_id' });
 models.Category.hasMany(models.Transaction, { foreignKey: 'category_id' });
+models.TestSeriesQuestion.hasOne(models.TestSeriesRawQuestion, {
+  foreignKey: 'question_id',
+});
 
 export { models as default };

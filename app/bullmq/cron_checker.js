@@ -1,4 +1,5 @@
 import { LoggerFactory } from '../lib/logger.js';
+import TestSeriesQuestionsBatchesJob from './jobs/test_series_questions_batches_job.js';
 import TestSeriesQuestionsJob from './jobs/test_series_questions_job.js';
 
 class CronChecker {
@@ -23,6 +24,15 @@ class CronChecker {
       if (testSeriesQuestionsJobs === 0) {
         this.logger.info('testSeriesQuestionsJob has 0 jobs, adding new job');
         await testSeriesQuestionsJob.add({});
+      }
+
+      const testSeriesQuestionsBatchesJob = new TestSeriesQuestionsBatchesJob();
+      const testSeriesQuestionsBatchesJobs =
+        await testSeriesQuestionsBatchesJob.queue.getActiveCount();
+
+      if (testSeriesQuestionsBatchesJobs === 0) {
+        this.logger.info('testSeriesQuestionsJob has 0 jobs, adding new job');
+        await testSeriesQuestionsBatchesJob.add({});
       }
 
       this.logger.info('all cron jobs are active');

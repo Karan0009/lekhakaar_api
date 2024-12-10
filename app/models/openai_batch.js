@@ -3,6 +3,7 @@ import sequelize from '../lib/sequelize.js';
 
 const OPENAI_BATCH_STATUS = {
   PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
   PROCESSED: 'PROCESSED',
   FAILED: 'FAILED',
 };

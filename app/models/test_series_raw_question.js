@@ -21,7 +21,7 @@ TestSeriesRawQuestion.init(
       allowNull: false,
     },
     question_id: {
-      type: DataTypes.UUID,
+      type: DataTypes.BIGINT,
       allowNull: true,
     },
     remark: {
