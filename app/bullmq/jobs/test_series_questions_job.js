@@ -21,7 +21,7 @@ export default class TestSeriesQuestionsJob extends BaseJob {
       queueName: config.BULL_MQ_QUEUES.testSeriesQuestionsQueue,
       jobOptions: {
         repeat: {
-          pattern: '*/5 * * * *',
+          pattern: '*/2 * * * *',
         },
       },
     });
