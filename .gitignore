@@ -4,3 +4,6 @@ log
 .wwebjs_auth
 .wwebjs_cache
 uploads
+*.jsonl
+.DS_Store
+dump.sql

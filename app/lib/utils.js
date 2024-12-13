@@ -8,6 +8,10 @@ class Utils {
     return uuidv1();
   }
 
+  getStaticImageUrlPath(fileName) {
+    return `http://64.227.188.248:8000/static/${fileName}`;
+  }
+
   async convertImageToBase64(imagePath) {
     const imageBuffer = await fs.readFile(imagePath);
     const base64Image = imageBuffer.toString('base64');

@@ -95,42 +95,43 @@ export default class TestSeriesQuestionsBatchesJob extends BaseJob {
             },
           );
           processedBatches.push({ batchJob, batch });
+        } else if (batchJob && batchJob?.status === 'failed') {
+          failedBatches.push({
+            batch,
+            batchJob,
+            failedRemark: batchJob?.errors?.data[0]?.code,
+          });
+        } else {
+          this.logger.error(
+            'either null batchJob or different batchJob status',
+            {
+              status: batchJob?.status || '',
+            },
+          );
         }
       }
+
+      await this.handleRetryFailedBatches(failedBatches, transaction);
 
       const processedFilesContent = [];
       for (let i = 0; i < processedBatches.length; ++i) {
         const processedBatch = processedBatches[i];
         const resultFileId = processedBatch.batchJob.output_file_id;
-        let fileObj;
-        try {
-          fileObj = await openaiClient.files.content(resultFileId);
-        } catch (error) {
-          this.logger.error('error in getAndUpdateProcessedBatchJobs', {
-            error,
-          });
-        }
-        if (fileObj) {
-          const fileContent = await fileObj.text();
-          const resultObjects = fileContent
-            .split('\n')
-            .filter((o) => o)
-            .map((o) => JSON.parse(o));
 
-          await processedBatch.batch.update(
-            {
-              status: OPENAI_BATCH_STATUS.PROCESSED,
-            },
-            {
-              transaction,
-            },
-          );
-          processedFilesContent.push(...resultObjects);
-          // todo:  update batch status to processed
-          // await processedBatch.batch.update({
-          //   status: OPENAI_BATCH_STATUS.PROCESSED,
-          // });
+        const resultObjects = await this.openaiFileToJsonObjects(resultFileId);
+        if (!resultObjects) {
+          continue;
         }
+
+        await processedBatch.batch.update(
+          {
+            status: OPENAI_BATCH_STATUS.PROCESSED,
+          },
+          {
+            transaction,
+          },
+        );
+        processedFilesContent.push(...resultObjects);
       }
 
       for (let i = 0; i < processedFilesContent.length; ++i) {
@@ -180,6 +181,80 @@ export default class TestSeriesQuestionsBatchesJob extends BaseJob {
     } catch (error) {
       this.logger.error('error in getProcessedBatches', { error });
       throw error;
+    }
+  }
+
+  /**
+   *
+   * @param {Array<{batch:OpenaiBatch,batchJob:import('openai/resources/batches.mjs').Batch,failedRemark:string}>} failedBatches
+   * @param {*} transaction
+   */
+  async handleRetryFailedBatches(failedBatches, transaction) {
+    for (let i = 0; i < failedBatches.length; ++i) {
+      try {
+        const { batch, batchJob, failedRemark } = failedBatches[i];
+
+        const inputFileObjects = await this.openaiFileToJsonObjects(
+          batchJob.input_file_id,
+        );
+
+        if (!inputFileObjects) {
+          continue;
+        }
+
+        await batch.update(
+          {
+            status: OPENAI_BATCH_STATUS.FAILED,
+            remark: failedRemark,
+            batch_job: batchJob,
+          },
+          {
+            transaction,
+          },
+        );
+        const customIds = inputFileObjects
+          .map((o) => o.custom_id)
+          .filter((str) => str);
+
+        await TestSeriesRawQuestion.update(
+          {
+            status: TEST_SERIES_RAW_QUESTION_STATUSES.PENDING,
+          },
+          {
+            where: {
+              id: customIds || [],
+            },
+            transaction,
+          },
+        );
+      } catch (error) {
+        this.logger.error('error in handleRetryFailedBatches', { error });
+        continue;
+      }
+    }
+  }
+
+  async openaiFileToJsonObjects(fileId) {
+    try {
+      let fileObj;
+      fileObj = await openaiClient.files.content(fileId);
+
+      let resultObjects;
+      if (fileObj) {
+        const fileContent = await fileObj.text();
+        resultObjects = fileContent
+          .split('\n')
+          .filter((o) => o)
+          .map((o) => JSON.parse(o));
+      }
+
+      return resultObjects;
+    } catch (error) {
+      this.logger.error('error in openaiFileToJsonObjects', {
+        error,
+      });
+
+      return null;
     }
   }
 
