@@ -10,6 +10,8 @@ import { join } from 'node:path';
 
 cors({
   origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Accept'],
 });
 const __dirname = import.meta.dirname;
 const app = express();
