@@ -8,7 +8,9 @@ import config from './config/config.js';
 import setRequestId from './middlewares/set_request_id.js';
 import { join } from 'node:path';
 
-cors();
+cors({
+  origin: '*',
+});
 const __dirname = import.meta.dirname;
 const app = express();
 const logger = new LoggerFactory('server.js').logger;
