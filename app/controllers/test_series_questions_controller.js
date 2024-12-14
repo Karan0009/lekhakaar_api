@@ -2,6 +2,7 @@ import { LoggerFactory } from '../lib/logger.js';
 import TestSeries, { TEST_SERIES_TYPES } from '../models/test_series.js';
 import utils from '../lib/utils.js';
 import models from '../models/index.js';
+import { col } from 'sequelize';
 
 class TestSeriesQuestionsController {
   constructor() {
@@ -68,6 +69,7 @@ class TestSeriesQuestionsController {
             },
           },
         ],
+        order: ['created_at'],
       });
 
       const dataToSend = testSeriesQuestions.map((q) => ({
@@ -76,8 +78,21 @@ class TestSeriesQuestionsController {
         image: utils.getStaticImageUrlPath(q.raw_question_data.split('/')[1]),
       }));
 
+      const BATCH_SIZE = 100;
+      const batches = [];
+      const intervals = Math.ceil(dataToSend.length / BATCH_SIZE);
+      for (let i = 0; i < intervals; i++) {
+        const startIndex = i * BATCH_SIZE;
+        const endIndex = startIndex + BATCH_SIZE;
+        const batch = dataToSend.slice(startIndex, endIndex);
+        batches.push({
+          id: `${unique_key}_${i + 1}`,
+          questions: batch,
+        });
+      }
+
       return res.json({
-        data: { questions: dataToSend },
+        data: { week_tests: batches },
         message: 'fetched successfuly',
         status_code: 200,
         success: true,
