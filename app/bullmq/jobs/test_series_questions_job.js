@@ -106,13 +106,14 @@ export default class TestSeriesQuestionsJob extends BaseJob {
       newBatch = await OpenaiBatch.create({});
       for (let i = 0; i < pendingQuestions.length; ++i) {
         const question = pendingQuestions[i];
-        const imagePath = join(
-          __dirname,
-          '../../../',
-          question.raw_question_data,
-        );
-        const base64Str = await utils.convertImageToBase64(imagePath);
-
+        // const imagePath = join(
+        //   __dirname,
+        //   '../../../',
+        //   question.raw_question_data,
+        // );
+        const imageName = question.raw_question_data.split('/')[1];
+        // const base64Str = await utils.convertImageToBase64(imagePath);
+        const imageUrl = utils.getStaticImageUrlPath(imageName);
         const task = {
           custom_id: question.id,
           method: 'POST',
@@ -131,7 +132,8 @@ export default class TestSeriesQuestionsJob extends BaseJob {
                   {
                     type: 'image_url',
                     image_url: {
-                      url: `data:image/jpeg;base64,${base64Str}`,
+                      // url: `data:image/jpeg;base64,${base64Str}`,
+                      url: `${imageUrl}`,
                       detail: 'auto',
                     },
                   },

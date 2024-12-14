@@ -47,6 +47,7 @@ const defaultConfig = {
   BULL_MQ_QUEUES: {
     testSeriesQuestionsQueue: 'test-series-questions-queue',
     testSeriesQuestionsBatchesQueue: 'test-series-questions-batches-queue',
+    createTestSeriesQueue: 'create-test-series-queue',
   },
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
   TEST_SERIES_QUESTIONS_JOB_BATCH_SIZE: 2,

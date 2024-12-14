@@ -33,6 +33,10 @@ TestSeriesQuestion.init(
       type: DataTypes.DATE,
       allowNull: false,
     },
+    weekly_test_series_id: {
+      type: DataTypes.BIGINT,
+      allowNull: true,
+    },
   },
   {
     sequelize,
