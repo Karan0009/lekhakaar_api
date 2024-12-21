@@ -2,7 +2,9 @@ import { LoggerFactory } from '../lib/logger.js';
 import TestSeries, { TEST_SERIES_TYPES } from '../models/test_series.js';
 import utils from '../lib/utils.js';
 import models from '../models/index.js';
-import { col } from 'sequelize';
+import redis from '../lib/redis.js';
+import { Op } from 'sequelize';
+import config from '../config/config.js';
 
 class TestSeriesQuestionsController {
   constructor() {
@@ -17,6 +19,24 @@ class TestSeriesQuestionsController {
    */
   getTotalWeeklyTestSeries = async (req, res, next) => {
     try {
+      const latestTestSeries = await TestSeries.findOne({
+        where: {
+          type: TEST_SERIES_TYPES.WEEKLY,
+        },
+        order: [['updated_at', 'desc']],
+      });
+
+      if (!latestTestSeries) {
+        return res.json({ data: { test_series: [] } });
+      }
+
+      let cacheKey = `test_series:weekly:${latestTestSeries.week_end_date}`;
+
+      const cachedData = await redis.get(cacheKey);
+      if (cachedData) {
+        return res.json({ data: { test_series: JSON.parse(cachedData) } });
+      }
+
       const weeklyTestSeries = await TestSeries.findAll({
         where: {
           type: TEST_SERIES_TYPES.WEEKLY,
@@ -32,6 +52,9 @@ class TestSeriesQuestionsController {
           .format('DD MMM, YYYY'),
         meta: t.meta,
       }));
+
+      await redis.set(cacheKey, JSON.stringify(dataToSend));
+
       return res.json({ data: { test_series: dataToSend } });
     } catch (error) {
       this.logger.error('error in getWeeklyTestSeries', { error });
@@ -50,6 +73,20 @@ class TestSeriesQuestionsController {
       const { unique_key } = req.params;
 
       if (!unique_key) throw new Error('invalid unique_key');
+
+      let cacheKey = `test_series:weekly:${unique_key}`;
+
+      const cachedData = await redis.get(cacheKey);
+      if (cachedData) {
+        this.logger.info('returned cached data');
+
+        return res.json({
+          data: { week_tests: JSON.parse(cachedData) },
+          message: 'fetched successfuly',
+          status_code: 200,
+          success: true,
+        });
+      }
 
       const testSeries = await TestSeries.findOne({
         where: {
@@ -90,6 +127,13 @@ class TestSeriesQuestionsController {
           questions: batch,
         });
       }
+
+      await redis.set(
+        cacheKey,
+        JSON.stringify(batches),
+        'EX',
+        config.times.hours_24_in_s,
+      );
 
       return res.json({
         data: { week_tests: batches },

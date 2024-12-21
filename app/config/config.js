@@ -54,6 +54,7 @@ const defaultConfig = {
   TEST_SERIES_QUESTIONS_BATCHES_JOB_BATCH_SIZE: 3,
   times: {
     mins_30_in_ms: 1800000,
+    hours_24_in_s: 86400,
   },
 };
 
