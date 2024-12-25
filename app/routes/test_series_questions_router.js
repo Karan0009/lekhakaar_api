@@ -13,4 +13,9 @@ testSeriesQuestionsRouter.get(
   testSeriesQuestionsController.getTestSeriesQuestionsByTestSeriesUniqueKey,
 );
 
+testSeriesQuestionsRouter.get(
+  '/weekly-tests/download/:unique_key',
+  testSeriesQuestionsController.downloadOneTestSeriesPdfBySetId,
+);
+
 export default testSeriesQuestionsRouter;

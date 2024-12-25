@@ -56,6 +56,7 @@ const defaultConfig = {
     mins_30_in_ms: 1800000,
     hours_24_in_s: 86400,
   },
+  downloads_root_folder: 'downloads',
 };
 
 const config = { ...defaultConfig };

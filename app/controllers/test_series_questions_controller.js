@@ -3,9 +3,12 @@ import TestSeries, { TEST_SERIES_TYPES } from '../models/test_series.js';
 import utils from '../lib/utils.js';
 import models from '../models/index.js';
 import redis from '../lib/redis.js';
-import { Op } from 'sequelize';
 import config from '../config/config.js';
-
+import pdfUtils from '../lib/pdf_utils.js';
+const __dirname = import.meta.dirname;
+import { join } from 'path';
+import fs from 'fs';
+import { mkdir } from 'fs/promises';
 class TestSeriesQuestionsController {
   constructor() {
     this.logger = new LoggerFactory('TestSeriesQuestionsController').logger;
@@ -140,6 +143,66 @@ class TestSeriesQuestionsController {
         message: 'fetched successfuly',
         status_code: 200,
         success: true,
+      });
+    } catch (error) {
+      this.logger.error(
+        'error in getTestSeriesQuestionsByTestSeriesUniqueKey',
+        { error },
+      );
+      next(error);
+    }
+  };
+
+  /**
+   *
+   * @param {import('express').Request} req
+   * @param {import('express').Response} res
+   * @param {import('express').NextFunction} next
+   */
+  downloadOneTestSeriesPdfBySetId = async (req, res, next) => {
+    try {
+      const { unique_key } = req.params;
+      const { set_id } = req.query;
+
+      if (!unique_key) throw new Error('invalid unique_key');
+
+      if (!set_id) throw new Error('invalid set_id');
+
+      let cacheKey = `test_series:weekly:${unique_key}`;
+
+      const cachedData = await redis.get(cacheKey);
+      if (!cachedData) {
+        throw new Error('cached data not found');
+      }
+
+      this.logger.info('returned cached data');
+      const jsonData = JSON.parse(cachedData);
+      const downloadFolderName = config.downloads_root_folder;
+      const downloadFolderPath = join(__dirname, `../../${downloadFolderName}`);
+      if (!fs.existsSync(downloadFolderPath)) {
+        await mkdir(downloadFolderPath, { recursive: true });
+      }
+      const testSeriesPdfFilename = `test_series_${unique_key}_set_${set_id}.pdf`;
+      const pdfFilePath = join(downloadFolderPath, testSeriesPdfFilename);
+      if (fs.existsSync(pdfFilePath)) {
+        return res.download(pdfFilePath, (err) => {
+          if (err) {
+            throw new Error('file download error');
+          }
+        });
+      }
+
+      const questionSet = jsonData.find((b) => b.id === set_id);
+      if (!questionSet) {
+        throw new Error('question set not found');
+      }
+
+      await pdfUtils.generatePdfForTestSeries([questionSet], pdfFilePath);
+
+      return res.download(pdfFilePath, (err) => {
+        if (err) {
+          throw new Error('file download error');
+        }
       });
     } catch (error) {
       this.logger.error(
