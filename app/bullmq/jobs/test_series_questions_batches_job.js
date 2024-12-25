@@ -141,7 +141,6 @@ export default class TestSeriesQuestionsBatchesJob extends BaseJob {
           result?.response?.body?.choices[0].message.content,
         );
 
-        // todo: create test_series_question
         const rawQuestion = await TestSeriesRawQuestion.findOne({
           where: {
             id: rawQuestionId,
@@ -155,6 +154,22 @@ export default class TestSeriesQuestionsBatchesJob extends BaseJob {
           });
           continue;
         }
+
+        if (!response) {
+          this.logger.error('response not found', {
+            rawQuestionId,
+          });
+          await rawQuestion.update(
+            {
+              status: TEST_SERIES_RAW_QUESTION_STATUSES.FAILED,
+            },
+            {
+              transaction,
+            },
+          );
+          continue;
+        }
+
         const newProcessedQuestion = await TestSeriesQuestion.create(
           {
             question: response?.question || '',

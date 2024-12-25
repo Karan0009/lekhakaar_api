@@ -5,6 +5,7 @@ const TEST_SERIES_RAW_QUESTION_STATUSES = {
   PENDING: 'PENDING',
   PROCESSING: 'PROCESSING',
   PROCESSED: 'PROCESSED',
+  FAILED: 'FAILED',
 };
 
 export default class TestSeriesRawQuestion extends Model {}

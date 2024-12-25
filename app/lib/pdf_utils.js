@@ -140,7 +140,7 @@ class PdfUtils {
         yOffset = this._changeYOffset(0, 10, contentHeight, doc);
       }
       doc.addImage(
-        imageData.toString('base64'),
+        `data:image/jpeg;base64,${imageData.toString('base64')}`,
         'JPEG',
         10,
         yOffset,
