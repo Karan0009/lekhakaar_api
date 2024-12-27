@@ -184,7 +184,12 @@ export default class TestSeriesQuestionsJob extends BaseJob {
         return { fileUploadSuccess: true, batchJobSuccess: false };
       }
 
-      await newBatch.update({ batch_job: batchJob });
+      await newBatch.update({
+        batch_job: batchJob,
+        status: batchJob
+          ? OPENAI_BATCH_STATUS.PENDING
+          : OPENAI_BATCH_STATUS.INVALID_BATCH_JOB,
+      });
 
       return {
         fileUploadSuccess: true,

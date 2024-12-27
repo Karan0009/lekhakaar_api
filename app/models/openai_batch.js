@@ -2,10 +2,12 @@ import { DataTypes, Model } from 'sequelize';
 import sequelize from '../lib/sequelize.js';
 
 const OPENAI_BATCH_STATUS = {
+  INIT: 'INIT',
   PENDING: 'PENDING',
   PROCESSING: 'PROCESSING',
   PROCESSED: 'PROCESSED',
   FAILED: 'FAILED',
+  INVALID_BATCH_JOB: 'INVALID_BATCH_JOB',
 };
 
 export default class OpenaiBatch extends Model {}
@@ -36,7 +38,7 @@ OpenaiBatch.init(
     status: {
       type: DataTypes.STRING,
       allowNull: false,
-      defaultValue: OPENAI_BATCH_STATUS.PENDING,
+      defaultValue: OPENAI_BATCH_STATUS.INIT,
     },
   },
   {

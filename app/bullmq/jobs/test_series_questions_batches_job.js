@@ -5,11 +5,10 @@ import TestSeriesRawQuestion, {
   TEST_SERIES_RAW_QUESTION_STATUSES,
 } from '../../models/test_series_raw_question.js';
 import sequelize from '../../lib/sequelize.js';
-import { Op, Transaction } from 'sequelize';
+import { Transaction } from 'sequelize';
 import openaiClient from '../../lib/openai/openai.js';
 import OpenaiBatch, { OPENAI_BATCH_STATUS } from '../../models/openai_batch.js';
 import TestSeriesQuestion from '../../models/test_series_question.js';
-const __dirname = import.meta.dirname;
 
 export default class TestSeriesQuestionsBatchesJob extends BaseJob {
   constructor() {
@@ -46,7 +45,6 @@ export default class TestSeriesQuestionsBatchesJob extends BaseJob {
     return OpenaiBatch.findAll({
       where: {
         status: OPENAI_BATCH_STATUS.PENDING,
-        batch_job: { [Op.not]: null },
       },
       order: [['id', 'ASC']],
       limit: config.TEST_SERIES_QUESTIONS_BATCHES_JOB_BATCH_SIZE,
@@ -79,6 +77,7 @@ export default class TestSeriesQuestionsBatchesJob extends BaseJob {
     try {
       const processedBatches = [];
       const failedBatches = [];
+      const invalidJobBatches = [];
       for (let i = 0; i < pendingBatches.length; ++i) {
         const batch = pendingBatches[i];
         let batchJob;
@@ -101,6 +100,8 @@ export default class TestSeriesQuestionsBatchesJob extends BaseJob {
             batchJob,
             failedRemark: batchJob?.errors?.data[0]?.code,
           });
+        } else if (!batchJob) {
+          invalidJobBatches.push(batch);
         } else {
           this.logger.error(
             'either null batchJob or different batchJob status',
@@ -110,6 +111,8 @@ export default class TestSeriesQuestionsBatchesJob extends BaseJob {
           );
         }
       }
+
+      await this.handleInvalidJobBatches(invalidJobBatches, transaction);
 
       await this.handleRetryFailedBatches(failedBatches, transaction);
 
@@ -242,6 +245,61 @@ export default class TestSeriesQuestionsBatchesJob extends BaseJob {
             transaction,
           },
         );
+      } catch (error) {
+        this.logger.error('error in handleRetryFailedBatches', { error });
+        continue;
+      }
+    }
+  }
+
+  /**
+   *
+   * @param {Array<OpenaiBatch>} invalidJobBatches
+   * @param {*} transaction
+   */
+  async handleInvalidJobBatches(invalidJobBatches, transaction) {
+    for (let i = 0; i < invalidJobBatches.length; ++i) {
+      try {
+        const batch = invalidJobBatches[i];
+        const { meta } = batch;
+        let batchJob;
+        if (!meta || !meta.id) {
+          await batch.update(
+            {
+              status: OPENAI_BATCH_STATUS.FAILED,
+              remark: 'invalid meta',
+              batch_job: null,
+            },
+            {
+              transaction,
+            },
+          );
+          continue;
+        }
+
+        if (meta && meta.id) {
+          try {
+            batchJob = await openaiClient.batches.create({
+              input_file_id: meta.id,
+              endpoint: '/v1/chat/completions',
+              completion_window: '24h',
+            });
+          } catch (error) {
+            this.logger.error('error in creating batch job', { error });
+          }
+        }
+
+        if (batchJob) {
+          await batch.update(
+            {
+              status: OPENAI_BATCH_STATUS.PENDING,
+              batch_job: batchJob,
+            },
+            {
+              transaction,
+            },
+          );
+        }
       } catch (error) {
         this.logger.error('error in handleRetryFailedBatches', { error });
         continue;
