@@ -50,7 +50,7 @@ const defaultConfig = {
     createTestSeriesQueue: 'create-test-series-queue',
   },
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
-  TEST_SERIES_QUESTIONS_JOB_BATCH_SIZE: 2,
+  TEST_SERIES_QUESTIONS_JOB_BATCH_SIZE: 5,
   TEST_SERIES_QUESTIONS_BATCHES_JOB_BATCH_SIZE: 10,
   times: {
     mins_30_in_ms: 1800000,
