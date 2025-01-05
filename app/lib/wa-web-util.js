@@ -24,7 +24,13 @@ class WhatsAppWebBot {
       this.client = new Client({
         puppeteer: {
           headless: true,
-          args: ['--no-sandbox'],
+          args: [
+            '--no-sandbox',
+            '--disable-gpu',
+            '--disable-setuid-sandbox',
+            '--max-old-space-size=512',
+            '--single-process',
+          ],
         },
         authStrategy: new LocalAuth(),
       });
