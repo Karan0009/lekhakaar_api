@@ -7,6 +7,7 @@ import TestSeriesQuestion from './test_series_question.js';
 import User from './user.js';
 import OpenaiBatch from './openai_batch.js';
 import TestSeries from './test_series.js';
+import SubmittedTest from './submitted_test.js';
 
 // Initialize the models (this ensures they are added to sequelize.models)
 const models = {
@@ -19,6 +20,7 @@ const models = {
   TestSeriesQuestion,
   OpenaiBatch,
   TestSeries,
+  SubmittedTest,
 };
 
 models.User.hasMany(models.Transaction, { foreignKey: 'user_id' });
@@ -33,6 +35,9 @@ models.TestSeriesQuestion.hasOne(models.TestSeriesRawQuestion, {
 });
 models.TestSeries.hasMany(models.TestSeriesQuestion, {
   foreignKey: 'weekly_test_series_id',
+});
+models.TestSeries.hasMany(models.SubmittedTest, {
+  foreignKey: 'test_series_id',
 });
 
 export { models as default };

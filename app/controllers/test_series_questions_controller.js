@@ -9,6 +9,8 @@ const __dirname = import.meta.dirname;
 import { join } from 'path';
 import fs from 'fs';
 import { mkdir } from 'fs/promises';
+import SubmittedTest from '../models/submitted_test.js';
+import { fn } from 'sequelize';
 class TestSeriesQuestionsController {
   constructor() {
     this.logger = new LoggerFactory('TestSeriesQuestionsController').logger;
@@ -33,7 +35,7 @@ class TestSeriesQuestionsController {
         return res.json({ data: { test_series: [] } });
       }
 
-      let cacheKey = `test_series:weekly:${latestTestSeries.week_end_date}`;
+      const cacheKey = `test_series:weekly:${latestTestSeries.week_end_date}`;
 
       const cachedData = await redis.get(cacheKey);
       if (cachedData) {
@@ -77,7 +79,7 @@ class TestSeriesQuestionsController {
 
       if (!unique_key) throw new Error('invalid unique_key');
 
-      let cacheKey = `test_series:weekly:${unique_key}`;
+      const cacheKey = `test_series:weekly:${unique_key}`;
 
       const cachedData = await redis.get(cacheKey);
       if (cachedData) {
@@ -168,7 +170,7 @@ class TestSeriesQuestionsController {
 
       if (!set_id) throw new Error('invalid set_id');
 
-      let cacheKey = `test_series:weekly:${unique_key}`;
+      const cacheKey = `test_series:weekly:${unique_key}`;
 
       const cachedData = await redis.get(cacheKey);
       if (!cachedData) {
@@ -209,6 +211,154 @@ class TestSeriesQuestionsController {
         'error in getTestSeriesQuestionsByTestSeriesUniqueKey',
         { error },
       );
+      next(error);
+    }
+  };
+
+  /**
+   *
+   * @param {import('express').Request} req
+   * @param {import('express').Response} res
+   * @param {import('express').NextFunction} next
+   */
+  getSubmittedTestSeriesCount = async (req, res, next) => {
+    try {
+      const { unique_key } = req.params;
+
+      if (!unique_key) throw new Error('invalid unique_key');
+
+      const cacheKey = `submitted_test_series:count:${unique_key}`;
+
+      const cachedData = await redis.get(cacheKey);
+      if (cachedData) {
+        this.logger.info('returned cached data');
+
+        return res.json({
+          data: JSON.parse(cachedData),
+          message: 'fetched successfuly',
+          status_code: 200,
+          success: true,
+        });
+      }
+
+      const testSeries = await TestSeries.findOne({
+        where: {
+          unique_key: unique_key,
+        },
+      });
+
+      if (!testSeries) throw new Error('test series not found');
+
+      const data = await SubmittedTest.findAll({
+        attributes: [
+          'test_series_name',
+          [fn('count', 'test_series_name'), 'count'],
+        ],
+        where: {
+          test_series_id: testSeries.id,
+        },
+        group: ['test_series_name'],
+      });
+
+      await redis.set(cacheKey, JSON.stringify(data));
+
+      return res.json({
+        data,
+        message: 'fetched successfuly',
+        status_code: 200,
+        success: true,
+      });
+    } catch (error) {
+      this.logger.error('error in getSubmittedTestSeriesCount', { error });
+      next(error);
+    }
+  };
+
+  /**
+   *
+   * @param {import('express').Request} req
+   * @param {import('express').Response} res
+   * @param {import('express').NextFunction} next
+   */
+  submitTestSeries = async (req, res, next) => {
+    try {
+      const { unique_key } = req.params;
+      const { test_series_name } = req.body;
+
+      if (!unique_key) throw new Error('invalid unique_key');
+
+      if (!test_series_name || typeof test_series_name !== 'string')
+        throw new Error('invalid test_series_name');
+
+      const testSeries = await TestSeries.findOne({
+        where: {
+          unique_key: unique_key,
+        },
+      });
+
+      if (!testSeries) throw new Error('test series not found');
+
+      const submittedTest = await SubmittedTest.create({
+        test_series_id: testSeries.id,
+        test_series_name,
+      });
+
+      const cacheKey = `submitted_test_series:count:${unique_key}`;
+      const cacheKeyLastFive = `submitted_test_series:last_five`;
+
+      await redis.del(cacheKey);
+      await redis.del(cacheKeyLastFive);
+
+      return res.json({
+        data: submittedTest,
+        message: 'submitted successfuly',
+        status_code: 200,
+        success: true,
+      });
+    } catch (error) {
+      this.logger.error('error in submitTestSeries', { error });
+      next(error);
+    }
+  };
+
+  /**
+   *
+   * @param {import('express').Request} req
+   * @param {import('express').Response} res
+   * @param {import('express').NextFunction} next
+   */
+  getLastFiveSubmittedTestSeries = async (req, res, next) => {
+    try {
+      const cacheKey = 'submitted_test_series:last_five';
+
+      const cachedData = await redis.get(cacheKey);
+      if (cachedData) {
+        this.logger.info('returned cached data');
+
+        return res.json({
+          data: JSON.parse(cachedData),
+          message: 'fetched successfuly',
+          status_code: 200,
+          success: true,
+        });
+      }
+
+      const data = await SubmittedTest.findAll({
+        attributes: ['test_series_name', 'test_series_id', 'created_at', 'id'],
+        order: [['created_at', 'desc']],
+        limit: 5,
+      });
+
+      await redis.set(cacheKey, JSON.stringify(data));
+
+      return res.json({
+        data,
+        message: 'fetched successfuly',
+        status_code: 200,
+        success: true,
+      });
+    } catch (error) {
+      this.logger.error('error in getLastFiveSubmittedTestSeries', { error });
       next(error);
     }
   };
