@@ -3,6 +3,8 @@ import sequelize from '../lib/sequelize.js';
 
 const RAW_TRANSACTION_STATUSES = {
   PENDING: 'PENDING',
+  EXTRACTING_TEXT: 'EXTRACTING_TEXT',
+  TEXT_EXTRACTED: 'TEXT_EXTRACTED',
   PROCESSING: 'PROCESSING',
   PROCESSED: 'PROCESSED',
 };
@@ -32,6 +34,10 @@ RawTransaction.init(
     raw_transaction_data: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    extracted_text: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     transaction_id: {
       type: DataTypes.UUID,

@@ -9,7 +9,9 @@ export default class RawTransactionsImgToTextProcessor extends BaseWorker {
       workerOptions: {
         name: config.BULL_MQ_QUEUES.rawTransactionsImgToTextQueue,
         concurrency: 1,
-        removeOnComplete: true,
+        removeOnComplete: {
+          age: config.times.mins_30_in_s,
+        },
       },
     });
   }

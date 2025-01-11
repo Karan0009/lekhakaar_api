@@ -56,6 +56,7 @@ const defaultConfig = {
   RAW_TRANSACTIONS_IMAGE_TO_TEXT_JOB_BATCH_SIZE: 5,
   times: {
     mins_30_in_ms: 1800000,
+    mins_30_in_s: 1800,
     hours_24_in_s: 86400,
   },
   downloads_root_folder: 'downloads',
