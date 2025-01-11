@@ -62,7 +62,7 @@ export default class RawTransactionsImgToTextJob extends BaseJob {
         this.logger.info('updating processed raw trxn');
         await rawTrxn.update({
           extracted_text: imageText,
-          stauts: RAW_TRANSACTION_STATUSES.TEXT_EXTRACTED,
+          status: RAW_TRANSACTION_STATUSES.TEXT_EXTRACTED,
         });
       }
 
