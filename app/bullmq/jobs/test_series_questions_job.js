@@ -84,9 +84,7 @@ export default class TestSeriesQuestionsJob extends BaseJob {
       {
         where: {
           id: pendingQuestionIds || [],
-          status: TEST_SERIES_RAW_QUESTION_STATUSES.PENDING,
         },
-
         transaction,
       },
     );

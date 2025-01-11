@@ -5,6 +5,7 @@ import { LoggerFactory } from '../lib/logger.js';
 import TestSeriesQuestionsJob from './jobs/test_series_questions_job.js';
 import { ExpressAdapter } from '@bull-board/express';
 import TestSeriesQuestionsBatchesJob from './jobs/test_series_questions_batches_job.js';
+import RawTransactionsImgToTextJob from './jobs/raw_transactions_img_to_text_job.js';
 
 class BullUIController {
   constructor() {
@@ -23,6 +24,7 @@ class BullUIController {
       queues: [
         new BullMQAdapter(new TestSeriesQuestionsJob().queue),
         new BullMQAdapter(new TestSeriesQuestionsBatchesJob().queue),
+        new BullMQAdapter(new RawTransactionsImgToTextJob().queue),
       ],
       serverAdapter: serverAdapter,
     });

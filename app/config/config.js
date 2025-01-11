@@ -48,10 +48,12 @@ const defaultConfig = {
     testSeriesQuestionsQueue: 'test-series-questions-queue',
     testSeriesQuestionsBatchesQueue: 'test-series-questions-batches-queue',
     createTestSeriesQueue: 'create-test-series-queue',
+    rawTransactionsImgToTextQueue: 'raw-transactions-img-to-text-queue',
   },
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
   TEST_SERIES_QUESTIONS_JOB_BATCH_SIZE: 5,
   TEST_SERIES_QUESTIONS_BATCHES_JOB_BATCH_SIZE: 10,
+  RAW_TRANSACTIONS_IMAGE_TO_TEXT_JOB_BATCH_SIZE: 5,
   times: {
     mins_30_in_ms: 1800000,
     hours_24_in_s: 86400,
