@@ -4,7 +4,7 @@ import RawTransaction, {
   RAW_TRANSACTION_STATUSES,
   RAW_TRANSACTION_TYPE,
 } from '../../models/raw_transaction.js';
-import { Transaction } from 'sequelize';
+import sequelize from 'sequelize';
 import AwsTextractService from '../../lib/ocr/aws_textract_service.js';
 const __dirname = import.meta.dirname;
 import { join } from 'path';
@@ -59,6 +59,7 @@ export default class RawTransactionsImgToTextJob extends BaseJob {
 
           continue;
         }
+        this.logger.info('updating processed raw trxn');
         await rawTrxn.update({
           extracted_text: imageText,
           stauts: RAW_TRANSACTION_STATUSES.TEXT_EXTRACTED,
@@ -70,7 +71,7 @@ export default class RawTransactionsImgToTextJob extends BaseJob {
         RAW_TRANSACTION_STATUSES.PENDING,
       );
 
-      //   await sqlTransaction.commit();
+      // await sqlTransaction.commit();
     } catch (error) {
       await this.setRawTransactionsStatus(
         pendingRawTransactionsWithImage,
@@ -100,7 +101,7 @@ export default class RawTransactionsImgToTextJob extends BaseJob {
    *
    * @param {RawTransaction[]} rawTransactions
    * @param {string} status
-   * @param {Transaction} transaction
+   * @param {*} transaction
    * @returns
    */
   async setRawTransactionsStatus(rawTransactions, status, transaction) {
