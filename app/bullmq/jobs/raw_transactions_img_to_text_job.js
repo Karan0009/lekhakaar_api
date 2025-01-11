@@ -51,7 +51,6 @@ export default class RawTransactionsImgToTextJob extends BaseJob {
 
         try {
           imageText = await this.ocrService.processImageFromPath(imagePath);
-          sucessfullyProcessedTransactions.push(rawTrxn);
         } catch (error) {
           this.logger.error('error in processImageFromPath', { error });
           failedRawTransactions.push(rawTrxn);
