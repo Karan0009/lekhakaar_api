@@ -50,7 +50,9 @@ export default class RawTransactionsImgToTextJob extends BaseJob {
         let imageText = '';
 
         try {
-          imageText = await this.ocrService.processImageFromPath(imagePath);
+          imageText = this.ocrService.getRawText(
+            await this.ocrService.processImageFromPath(imagePath),
+          );
         } catch (error) {
           this.logger.error('error in processImageFromPath', { error });
           failedRawTransactions.push(rawTrxn);

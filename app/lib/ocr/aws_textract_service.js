@@ -76,11 +76,9 @@ export default class AwsTextractService extends BaseOcr {
    * @returns
    */
   getRawText(textractResponse) {
-    const rawText = textractResponse.Blocks.filter(
-      (block) => block.BlockType === 'LINE',
-    )
+    const rawText = textractResponse.Blocks.filter((block) => block.Text)
       .map((line) => line.Text)
-      .join('\n');
+      .join(' ');
 
     return rawText;
   }
