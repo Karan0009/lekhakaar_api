@@ -57,6 +57,11 @@ const defaultConfig = {
     hours_24_in_s: 86400,
   },
   downloads_root_folder: 'downloads',
+  AWS: {
+    region: process.env.AWS_REGION || 'ap-south-1',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
 };
 
 const config = { ...defaultConfig };
