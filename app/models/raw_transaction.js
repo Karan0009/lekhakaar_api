@@ -36,7 +36,7 @@ RawTransaction.init(
       allowNull: false,
     },
     extracted_text: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: true,
     },
     transaction_id: {
