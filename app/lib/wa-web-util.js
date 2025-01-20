@@ -154,7 +154,9 @@ class WhatsAppWebBot {
         raw_transaction_data: message.hasMedia
           ? downloadMediaRes
           : message.body,
-        status: RAW_TRANSACTION_STATUSES.PENDING,
+        status: message.hasMedia
+          ? RAW_TRANSACTION_STATUSES.PENDING_TEXT_EXTRACTION
+          : RAW_TRANSACTION_STATUSES.PENDING,
       };
       const newRawTransaction = await rawTransactionService.addRawTransaction(
         newRawTransactionData,
@@ -162,7 +164,7 @@ class WhatsAppWebBot {
       this.logger.info('new transaction added successfully', {
         newRawTransaction,
       });
-      // TODO: WRITE A CRON TO PROCESS unprocessed raw transactions by ai
+
       await this.sendMessage(
         message.from,
         WA_MESSAGE_TEMPLATES.transactions.input_received,

@@ -9,6 +9,9 @@ export default class TestSeriesQuestionsBatchesProcessor extends BaseWorker {
       workerOptions: {
         name: config.BULL_MQ_QUEUES.testSeriesQuestionsBatchesQueue,
         concurrency: 1,
+        removeOnComplete: {
+          age: config.times.mins_30_in_s,
+        },
       },
     });
   }

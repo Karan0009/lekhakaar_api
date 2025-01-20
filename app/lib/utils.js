@@ -28,11 +28,21 @@ class Utils {
    * @param {string} tz
    * @returns
    */
-  getDayJsObj(datetime, tz = 'utc') {
+  getDayJsObj(datetime, tz = 'utc', inputFormat = '') {
     try {
       dayjs.extend(utc);
       dayjs.extend(timezone);
-      return datetime ? dayjs(datetime).tz(tz) : dayjs().tz(tz);
+      const res = datetime
+        ? inputFormat != ''
+          ? dayjs(datetime, inputFormat).tz(tz)
+          : dayjs(datetime).tz(tz)
+        : dayjs().tz(tz);
+
+      if (!res.isValid()) {
+        return null;
+      }
+
+      return res;
     } catch (err) {
       throw err;
     }

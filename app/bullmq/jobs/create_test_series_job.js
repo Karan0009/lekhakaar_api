@@ -7,6 +7,7 @@ import TestSeriesQuestion from '../../models/test_series_question.js';
 import TestSeries, { TEST_SERIES_TYPES } from '../../models/test_series.js';
 import dayjs from 'dayjs';
 import utils from '../../lib/utils.js';
+import openaiClient from '../../lib/openai/openai.js';
 const __dirname = import.meta.dirname;
 
 export default class CreateTestSeriesJob extends BaseJob {
@@ -25,7 +26,14 @@ export default class CreateTestSeriesJob extends BaseJob {
     try {
       this.logger.info('job ran', { jobData });
       await this.createPendingWeeklyTestSeries();
-      //   await this.addQuestionsToWeeklyTestSeries();
+      // const response = await openaiClient.batches.list({
+      //   limit: 100,
+      // });
+      // const inProgressBatches = response.data.filter(
+      //   (batch) => batch.status === 'in-progress',
+      // );
+      // console.log('In-Progress Batches:', inProgressBatches);
+      // await this.addQuestionsToWeeklyTestSeries();
     } catch (error) {
       this.logger.error('error in process', { error });
       throw error;
@@ -81,9 +89,6 @@ export default class CreateTestSeriesJob extends BaseJob {
 
   async createPendingWeeklyTestSeries() {
     try {
-      const totalQuestionsDatesCount = await TestSeriesQuestion.findAll({
-        attributes: [fn('distinct', fn('date', col('question_added_date')))],
-      });
       const latestDateOfNullWeeklySeriesIdTestSeriesQuestion =
         await TestSeriesQuestion.findOne({
           where: {
@@ -92,6 +97,10 @@ export default class CreateTestSeriesJob extends BaseJob {
           order: [['question_added_date', 'ASC']],
         });
 
+      if (!latestDateOfNullWeeklySeriesIdTestSeriesQuestion) {
+        this.logger.info('all done!');
+        return;
+      }
       const weekEndDateOfTestSeriesQuestion = utils.getDayJsObj(
         latestDateOfNullWeeklySeriesIdTestSeriesQuestion.question_added_date,
       );

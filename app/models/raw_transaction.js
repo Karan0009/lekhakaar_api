@@ -2,11 +2,13 @@ import { DataTypes, Model } from 'sequelize';
 import sequelize from '../lib/sequelize.js';
 
 const RAW_TRANSACTION_STATUSES = {
-  PENDING: 'PENDING',
+  PENDING_TEXT_EXTRACTION: 'PENDING_TEXT_EXTRACTION',
   EXTRACTING_TEXT: 'EXTRACTING_TEXT',
-  TEXT_EXTRACTED: 'TEXT_EXTRACTED',
+  PENDING: 'PENDING',
   PROCESSING: 'PROCESSING',
   PROCESSED: 'PROCESSED',
+  FAILED: 'FAILED',
+  INVALID: 'INVALID',
 };
 
 const RAW_TRANSACTION_TYPE = {
@@ -40,7 +42,7 @@ RawTransaction.init(
       allowNull: true,
     },
     transaction_id: {
-      type: DataTypes.UUID,
+      type: DataTypes.BIGINT,
       allowNull: true,
     },
     remark: {

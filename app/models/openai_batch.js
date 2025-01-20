@@ -10,6 +10,11 @@ const OPENAI_BATCH_STATUS = {
   INVALID_BATCH_JOB: 'INVALID_BATCH_JOB',
 };
 
+const OPENAI_BATCH_PURPOSES = {
+  TEST_SERIES: 'TEST_SERIES',
+  RAW_TRANSACTION_DATA_EXTRACTION: 'RAW_TRANSACTION_DATA_EXTRACTION',
+};
+
 export default class OpenaiBatch extends Model {}
 
 OpenaiBatch.init(
@@ -35,6 +40,10 @@ OpenaiBatch.init(
       type: DataTypes.JSONB,
       allowNull: true,
     },
+    purpose: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     status: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -48,4 +57,4 @@ OpenaiBatch.init(
   },
 );
 
-export { OPENAI_BATCH_STATUS };
+export { OPENAI_BATCH_STATUS, OPENAI_BATCH_PURPOSES };

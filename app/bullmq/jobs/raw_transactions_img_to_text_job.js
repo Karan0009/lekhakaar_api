@@ -62,7 +62,7 @@ export default class RawTransactionsImgToTextJob extends BaseJob {
         this.logger.info('updating processed raw trxn');
         await rawTrxn.update({
           extracted_text: imageText,
-          status: RAW_TRANSACTION_STATUSES.TEXT_EXTRACTED,
+          status: RAW_TRANSACTION_STATUSES.PENDING,
         });
       }
 
@@ -75,7 +75,7 @@ export default class RawTransactionsImgToTextJob extends BaseJob {
     } catch (error) {
       await this.setRawTransactionsStatus(
         pendingRawTransactionsWithImage,
-        RAW_TRANSACTION_STATUSES.PENDING,
+        RAW_TRANSACTION_STATUSES.PENDING_TEXT_EXTRACTION,
       );
       //   if (sqlTransaction) {
       //     await sqlTransaction.rollback();
@@ -89,7 +89,7 @@ export default class RawTransactionsImgToTextJob extends BaseJob {
     return RawTransaction.findAll({
       where: {
         raw_transaction_type: RAW_TRANSACTION_TYPE.WA_IMAGE,
-        status: RAW_TRANSACTION_STATUSES.PENDING,
+        status: RAW_TRANSACTION_STATUSES.PENDING_TEXT_EXTRACTION,
       },
       order: [['created_at', 'ASC']],
       limit: config.RAW_TRANSACTIONS_IMAGE_TO_TEXT_JOB_BATCH_SIZE,

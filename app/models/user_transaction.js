@@ -1,12 +1,18 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../lib/sequelize.js';
 
-export default class Transaction extends Model {}
+const USER_TRANSACTION_STATUSES = {
+  EXTRACTED: 'EXTRACTED',
+  DELETED: 'DELETED',
+};
 
-Transaction.init(
+export default class UserTransaction extends Model {}
+
+UserTransaction.init(
   {
     id: {
-      type: DataTypes.UUID,
+      type: DataTypes.BIGINT,
+      autoIncrement: true,
       primaryKey: true,
     },
     user_id: {
@@ -29,18 +35,31 @@ Transaction.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    meta: {
+      type: DataTypes.JSONB,
+      allowNull: false,
+    },
     status: {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    deleted_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
   {
     sequelize,
-    modelName: 'Transaction',
-    tableName: 'transactions',
+    modelName: 'UserTransaction',
+    tableName: 'user_transactions',
+    paranoid: true,
+    deletedAt: 'deleted_at',
+    defaultScope: {
+      where: {
+        deleted_at: null,
+      },
+    },
   },
 );
 
-// Transaction.belongsTo(User, {
-//   foreignKey: 'user_id',
-// });
+export { USER_TRANSACTION_STATUSES };

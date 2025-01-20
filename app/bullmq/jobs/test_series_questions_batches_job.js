@@ -7,7 +7,10 @@ import TestSeriesRawQuestion, {
 import sequelize from '../../lib/sequelize.js';
 import { Transaction } from 'sequelize';
 import openaiClient from '../../lib/openai/openai.js';
-import OpenaiBatch, { OPENAI_BATCH_STATUS } from '../../models/openai_batch.js';
+import OpenaiBatch, {
+  OPENAI_BATCH_PURPOSES,
+  OPENAI_BATCH_STATUS,
+} from '../../models/openai_batch.js';
 import TestSeriesQuestion from '../../models/test_series_question.js';
 
 export default class TestSeriesQuestionsBatchesJob extends BaseJob {
@@ -45,6 +48,7 @@ export default class TestSeriesQuestionsBatchesJob extends BaseJob {
     return OpenaiBatch.findAll({
       where: {
         status: OPENAI_BATCH_STATUS.PENDING,
+        purpose: OPENAI_BATCH_PURPOSES.TEST_SERIES,
       },
       order: [['id', 'ASC']],
       limit: config.TEST_SERIES_QUESTIONS_BATCHES_JOB_BATCH_SIZE,
@@ -70,48 +74,13 @@ export default class TestSeriesQuestionsBatchesJob extends BaseJob {
 
   /**
    *
-   * @param {Array<OpenaiBatch>} pendingBatches
+   * @param {OpenaiBatch[]} pendingBatches
    * @param {Transaction} transaction
    */
   async getAndUpdateProcessedBatchJobs(pendingBatches, transaction) {
     try {
-      const processedBatches = [];
-      const failedBatches = [];
-      const invalidJobBatches = [];
-      for (let i = 0; i < pendingBatches.length; ++i) {
-        const batch = pendingBatches[i];
-        let batchJob;
-        if (batch?.batch_job) {
-          batchJob = await openaiClient.batches.retrieve(batch?.batch_job?.id);
-        }
-        if (batchJob && batchJob?.status === 'completed') {
-          await batch.update(
-            {
-              status: OPENAI_BATCH_STATUS.PROCESSING,
-            },
-            {
-              transaction,
-            },
-          );
-          processedBatches.push({ batchJob, batch });
-        } else if (batchJob && batchJob?.status === 'failed') {
-          failedBatches.push({
-            batch,
-            batchJob,
-            failedRemark: batchJob?.errors?.data[0]?.code,
-          });
-        } else if (!batchJob) {
-          invalidJobBatches.push(batch);
-        } else {
-          this.logger.error(
-            'either null batchJob or different batchJob status',
-            {
-              status: batchJob?.status || '',
-            },
-          );
-        }
-      }
-
+      const { failedBatches, invalidJobBatches, processedBatches } =
+        await this.checkBatchJobsStatuses(pendingBatches, transaction);
       await this.handleInvalidJobBatches(invalidJobBatches, transaction);
 
       await this.handleRetryFailedBatches(failedBatches, transaction);
@@ -200,6 +169,49 @@ export default class TestSeriesQuestionsBatchesJob extends BaseJob {
       this.logger.error('error in getProcessedBatches', { error });
       throw error;
     }
+  }
+
+  /**
+   *
+   * @param {OpenaiBatch[]} pendingBatches
+   * @param {Transaction} transaction
+   */
+  async checkBatchJobsStatuses(pendingBatches, transaction) {
+    const processedBatches = [];
+    const failedBatches = [];
+    const invalidJobBatches = [];
+    for (let i = 0; i < pendingBatches.length; ++i) {
+      const batch = pendingBatches[i];
+      let batchJob;
+      if (batch?.batch_job) {
+        batchJob = await openaiClient.batches.retrieve(batch?.batch_job?.id);
+      }
+      if (batchJob && batchJob?.status === 'completed') {
+        await batch.update(
+          {
+            status: OPENAI_BATCH_STATUS.PROCESSING,
+          },
+          {
+            transaction,
+          },
+        );
+        processedBatches.push({ batchJob, batch });
+      } else if (batchJob && batchJob?.status === 'failed') {
+        failedBatches.push({
+          batch,
+          batchJob,
+          failedRemark: batchJob?.errors?.data[0]?.code,
+        });
+      } else if (!batchJob) {
+        invalidJobBatches.push(batch);
+      } else {
+        this.logger.error('either null batchJob or different batchJob status', {
+          status: batchJob?.status || '',
+        });
+      }
+    }
+
+    return { processedBatches, failedBatches, invalidJobBatches };
   }
 
   /**
@@ -301,7 +313,7 @@ export default class TestSeriesQuestionsBatchesJob extends BaseJob {
           );
         }
       } catch (error) {
-        this.logger.error('error in handleRetryFailedBatches', { error });
+        this.logger.error('error in handleInvalidJobBatches', { error });
         continue;
       }
     }

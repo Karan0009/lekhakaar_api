@@ -12,7 +12,10 @@ import openaiClient from '../../lib/openai/openai.js';
 import utils from '../../lib/utils.js';
 
 import { OPEN_AI_PROMPTS } from '../../lib/openai/prompts.js';
-import OpenaiBatch, { OPENAI_BATCH_STATUS } from '../../models/openai_batch.js';
+import OpenaiBatch, {
+  OPENAI_BATCH_PURPOSES,
+  OPENAI_BATCH_STATUS,
+} from '../../models/openai_batch.js';
 const __dirname = import.meta.dirname;
 
 export default class TestSeriesQuestionsJob extends BaseJob {
@@ -101,7 +104,9 @@ export default class TestSeriesQuestionsJob extends BaseJob {
       if (pendingQuestions.length === 0) return null;
 
       const tasks = [];
-      newBatch = await OpenaiBatch.create({});
+      newBatch = await OpenaiBatch.create({
+        purpose: OPENAI_BATCH_PURPOSES.TEST_SERIES,
+      });
       for (let i = 0; i < pendingQuestions.length; ++i) {
         const question = pendingQuestions[i];
         // const imagePath = join(
