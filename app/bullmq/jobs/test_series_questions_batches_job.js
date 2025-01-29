@@ -12,6 +12,7 @@ import OpenaiBatch, {
   OPENAI_BATCH_STATUS,
 } from '../../models/openai_batch.js';
 import TestSeriesQuestion from '../../models/test_series_question.js';
+import CreateTestSeriesJob from './create_test_series_job.js';
 
 export default class TestSeriesQuestionsBatchesJob extends BaseJob {
   constructor() {
@@ -19,7 +20,7 @@ export default class TestSeriesQuestionsBatchesJob extends BaseJob {
       queueName: config.BULL_MQ_QUEUES.testSeriesQuestionsBatchesQueue,
       jobOptions: {
         repeat: {
-          pattern: '*/5 * * * *',
+          pattern: '*/2 * * * *',
         },
       },
     });
@@ -35,6 +36,8 @@ export default class TestSeriesQuestionsBatchesJob extends BaseJob {
       await this.getAndUpdateProcessedBatchJobs(pendingBatches, sqlTransaction);
 
       if (sqlTransaction) await sqlTransaction.commit();
+      const createTestSeriesJob = new CreateTestSeriesJob();
+      await createTestSeriesJob.process({});
     } catch (error) {
       if (sqlTransaction) {
         await sqlTransaction.rollback();
