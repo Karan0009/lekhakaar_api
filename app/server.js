@@ -20,7 +20,10 @@ createNamespace(`${config.APP_NAME}-req-context`);
 
 app.use(express.json());
 app.use(setRequestId);
-app.use('/static', express.static(join(__dirname, '../uploads')));
+app.use(
+  '/static',
+  express.static(join(__dirname, '../../media_storage/uploads')),
+);
 app.use(router);
 
 (async () => {
