@@ -12,7 +12,7 @@ class Utils {
   }
 
   getStaticImageUrlPath(fileName) {
-    return `http://64.227.188.248:8000/static/${fileName}`;
+    return `https://api.fabnest.in/static/${fileName}`;
   }
 
   async convertImageToBase64(imagePath) {
