@@ -8,7 +8,10 @@
 
 echo "🚀 Stopping and removing existing containers..."
 
-docker-compose down
+docker compose down
+
+echo "🧹 Removing old images..."
+docker image prune -a -f
 
 echo "🔄 Building new images..."
 docker compose build
