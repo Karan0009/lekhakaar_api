@@ -13,17 +13,13 @@ cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Accept'],
 });
-const __dirname = import.meta.dirname;
 const app = express();
 const logger = new LoggerFactory('server.js').logger;
 createNamespace(`${config.APP_NAME}-req-context`);
 
 app.use(express.json());
 app.use(setRequestId);
-app.use(
-  '/static',
-  express.static(join(__dirname, '../../media_storage/uploads')),
-);
+app.use('/static', express.static(join(config.MEDIA_UPLOAD_PATH, 'uploads')));
 app.use(router);
 
 (async () => {
