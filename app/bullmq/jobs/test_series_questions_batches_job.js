@@ -1,6 +1,6 @@
 import config from '../../config/config.js';
 import BaseJob from '../base/base_job.js';
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import TestSeriesRawQuestion, {
   TEST_SERIES_RAW_QUESTION_STATUSES,
 } from '../../models/test_series_raw_question.js';
@@ -13,6 +13,8 @@ import OpenaiBatch, {
 } from '../../models/openai_batch.js';
 import TestSeriesQuestion from '../../models/test_series_question.js';
 import CreateTestSeriesJob from './create_test_series_job.js';
+import { join } from 'node:path';
+import fs from 'node:fs';
 
 export default class TestSeriesQuestionsBatchesJob extends BaseJob {
   constructor() {
@@ -357,8 +359,14 @@ export default class TestSeriesQuestionsBatchesJob extends BaseJob {
         const resultFileId = batchJob.output_file_id;
         const result = await openaiClient.files.content(resultFileId).content;
 
-        const processedBatchesFolder = 'openai_batch_files/processed';
-        // if()
+        const processedBatchesFolder = join(
+          config.MEDIA_UPLOAD_PATH,
+          'openai_batch_files',
+          'processed',
+        );
+        if (!fs.existsSync(processedBatchesFolder)) {
+          await mkdir(processedBatchesFolder, { recursive: true });
+        }
         const processedBatchFilePath = `${processedBatchesFolder}/test_series_questions_processed_batch_${batch.id}`;
         await writeFile(processedBatchFilePath, JSON.stringify(result));
       }
