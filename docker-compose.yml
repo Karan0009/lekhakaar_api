@@ -1,86 +1,63 @@
 # docker compose file, only for development/test
 
 services:
-  app:
-    image: wa-services:latest
+  lekhakaar_api:
     build:
       context: .
-      dockerfile: ./docker/Dockerfile
+      dockerfile: docker/Dockerfile.api
     platform: linux/amd64
-    # volumes:
-    #   - .:/opt/wa_service
-    environment:
-      - NODE_ENV:development
-    depends_on:
-      - wa_services_master_db
-      - redis
+    restart: unless-stopped
     networks:
-      - wa-service-net
+      - lekhakaar_api_net
+    depends_on:
+      # - wa_services_master_db
+      - redis
+    volumes:
+      - .:/opt/lekhakaar_api
+      - ../media_storage:/opt/media_storage
     ports:
-      - 3000:3000
-      - 9229:9229
+      - '8000:8000'
+      - '9229:9229'
+    env_file:
+      - .env
     command: ['node', 'bin/run.js']
 
-  # admin:
-  #   image: sip-rocket:latest
-  #   build:
-  #     context: .
-  #     dockerfile: ./docker/Dockerfile
-  #   platform: linux/amd64
-  #   volumes:
-  #     - .:/opt/sip_rocket
-  #   environment:
-  #     - NODE_ENV:development
-  #   depends_on:
-  #     - sip_rocket_master_test_db # remove this line if you don't want to use postgres
-  #     - sip_rocket_slave_test_db # remove this line if you don't want to use postgres
-  #     - redis
-  #     - mongo
-  #   networks:
-  #     - sip-rocket-net
-  #   ports:
-  #     - 4050:4050
-  #     - 9233:9233
-  #   command: ['npx', 'nodemon', '--inspect=0.0.0.0:9233', 'bin/run_admin.js']
-
-  # bullmq:
-  #   image: sip-rocket:latest
-  #   build:
-  #     context: .
-  #     dockerfile: ./docker/Dockerfile
-  #   platform: linux/amd64
-  #   volumes:
-  #     - .:/opt/sip_rocket
-  #   environment:
-  #     - NODE_ENV:development
-  #   depends_on:
-  #     - sip_rocket_master_test_db # remove this line if you don't want to use postgres
-  #     - sip_rocket_slave_test_db # remove this line if you don't want to use postgres
-  #     - redis
-  #     - mongo
-  #   networks:
-  #     - sip-rocket-net
-  #   ports:
-  #     - 9230:9230
-  #   command:
-  #     ['npx', 'nodemon', '--inspect=0.0.0.0:9230', 'bin/run_worker_manager.js']
-
-  wa_services_master_db:
-    image: postgres:latest
-    container_name: wa_services_master_db
-    environment:
-      - POSTGRES_DB=lekhakaar
-      - POSTGRES_USER=fabnest-test
-      - POSTGRES_PASSWORD=fabnest-test
-      # - POSTGRES_REPLICATION_MODE=master
-      # - POSTGRES_REPLICATION_USER=replica_user
-      # - POSTGRES_REPLICATION_PASSWORD=replica_password
-    networks:
-      - wa-service-net
-    ports:
-      - 5432:5432
+  bull_mq:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mq
+    platform: linux/amd64
+    restart: unless-stopped
+    depends_on:
+      # - wa_services_master_db
+      - redis
     volumes:
-      - wa_service_db_data:/var/lib/postgresql/data
+      - .:/opt/bull_mq
+      - ../media_storage:/opt/media_storage
+    networks:
+      - lekhakaar_api_net
+    ports:
+      - '9230:9230'
+    env_file:
+      - .env
+    command: ['node', 'bin/run_mq.js']
+
+  # em_service_master_db:
+  #   image: postgres:latest
+  #   container_name: wa_services_master_db
+  #   environment:
+  #     - POSTGRES_DB=lekhakaar
+  #     - POSTGRES_USER=fabnest-test
+  #     - POSTGRES_PASSWORD=fabnest-test
+  #     # - POSTGRES_REPLICATION_MODE=master
+  #     # - POSTGRES_REPLICATION_USER=replica_user
+  #     # - POSTGRES_REPLICATION_PASSWORD=replica_password
+  #   networks:
+  #     - wa-service-net
+  #   ports:
+  #     - 5432:5432
+  #   volumes:
+  #     - wa_service_db_data:/var/lib/postgresql/data
 
   redis:
     image: redis
@@ -88,10 +65,11 @@ services:
     ports:
       - 6379:6379
     networks:
-      - wa-service-net
+      - lekhakaar_api_net
 
 networks:
-  wa-service-net:
+  lekhakaar_api_net:
 
 volumes:
-  wa_service_db_data:
+  # em_services_db_data:
+  media_storage:

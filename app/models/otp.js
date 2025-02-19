@@ -49,7 +49,7 @@ Otp.init(
 );
 
 // Automatically set ULID before creating a new OTP
-OTP.beforeCreate((otp) => {
+Otp.beforeCreate((otp) => {
   otp.id = ulid();
 });
 

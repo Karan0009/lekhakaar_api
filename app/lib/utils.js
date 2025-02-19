@@ -1,15 +1,12 @@
-import { v1 as uuidv1 } from 'uuid';
 import fs from 'fs/promises';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import timezone from 'dayjs/plugin/timezone.js';
+import crypto from 'crypto';
+import config from '../config/config.js';
 
 class Utils {
   constructor() {}
-
-  getUUID() {
-    return uuidv1();
-  }
 
   getStaticImageUrlPath(fileName) {
     return `https://api.fabnest.in/static/${fileName}`;
@@ -46,6 +43,41 @@ class Utils {
     } catch (err) {
       throw err;
     }
+  }
+
+  /**
+   *
+   * @param {number} length length of result string
+   * @returns
+   */
+  generateRandomDigits(length) {
+    if (length <= 0) {
+      throw new Error('Length must be greater than 0');
+    }
+    let result = '';
+    const digits = '0123456789';
+
+    for (let i = 0; i < length; i++) {
+      result += digits.charAt(Math.floor(Math.random() * digits.length));
+    }
+
+    return result;
+  }
+
+  generateRandomToken(length) {
+    return crypto.randomBytes(length).toString('hex');
+  }
+
+  /**
+   *
+   * @param {string} str
+   * @returns
+   */
+  getSecureHash(str) {
+    return crypto
+      .createHmac('sha256', config.SECRET_HASH_KEY)
+      .update(str)
+      .digest('hex');
   }
 }
 

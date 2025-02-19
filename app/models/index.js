@@ -9,6 +9,8 @@ import OpenaiBatch from './openai_batch.js';
 import TestSeries from './test_series.js';
 import SubmittedTest from './submitted_test.js';
 import UncategorizedTransaction from './uncategorized_transactions.js';
+import Otp from './otp.js';
+import RefreshToken from './refresh_token.js';
 
 // Initialize the models (this ensures they are added to sequelize.models)
 const models = {
@@ -23,8 +25,11 @@ const models = {
   OpenaiBatch,
   TestSeries,
   SubmittedTest,
+  Otp,
+  RefreshToken,
 };
 
+models.User.hasMany(models.RefreshToken, { foreignKey: 'user_id' });
 models.User.hasMany(models.UserTransaction, { foreignKey: 'user_id' });
 models.User.hasMany(models.RawTransaction, { foreignKey: 'user_id' });
 models.User.hasMany(models.Category, { foreignKey: 'user_id' });

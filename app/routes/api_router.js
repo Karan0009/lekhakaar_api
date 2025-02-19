@@ -1,9 +1,11 @@
 import express from 'express';
 import testSeriesQuestionsRouter from './test_series_questions_router.js';
+import lekhakaarRouter from './lekhakaar_router.js';
 
 const apiRouter = express.Router();
 
 apiRouter.use('/test-series', testSeriesQuestionsRouter);
+apiRouter.use('/lekhakaar', lekhakaarRouter);
 
 apiRouter.use((err, req, res, next) => {
   const message = err.message || 'Internal Server Error';

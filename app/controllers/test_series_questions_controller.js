@@ -180,7 +180,10 @@ class TestSeriesQuestionsController {
       this.logger.info('returned cached data');
       const jsonData = JSON.parse(cachedData);
       const downloadFolderName = config.downloads_root_folder;
-      const downloadFolderPath = join(__dirname, `../../${downloadFolderName}`);
+      const downloadFolderPath = join(
+        config.MEDIA_UPLOAD_PATH,
+        downloadFolderName,
+      );
       if (!fs.existsSync(downloadFolderPath)) {
         await mkdir(downloadFolderPath, { recursive: true });
       }

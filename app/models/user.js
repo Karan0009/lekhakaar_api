@@ -1,5 +1,6 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../lib/sequelize.js';
+import { v1 as uuidv1 } from 'uuid';
 
 const USER_STATUSES = {
   ACTIVE: 'ACTIVE',
@@ -32,5 +33,10 @@ User.init(
     sequelize,
     modelName: 'User',
     tableName: 'users',
+    hooks: {
+      beforeCreate: (user) => {
+        user.id = uuidv1();
+      },
+    },
   },
 );

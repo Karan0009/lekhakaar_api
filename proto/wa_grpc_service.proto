@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+option go_package = "github.com/Karan0009/go_wa_bot/wa_grpc_service";
+
+message Otp_Message {
+    string service_name = 1;
+    string phone_number = 2;
+    string otp_code = 3;
+}
+
+message SendOtpRequest {
+    Otp_Message data = 1;
+}
+
+message SendOtpResponse {
+    string status_code = 1;
+    bool success = 2;
+    string data = 3;
+}
+
+message GetTokenRequest {
+    string service_id = 1;
+    string timestamp = 2;
+    string signature = 3;
+}
+
+message GetTokenResponse {
+    string status_code = 1;
+    bool success = 2;
+    string data = 3;
+}
+
+service WAService {
+    rpc SendOtpMessage (SendOtpRequest) returns (SendOtpResponse) {}
+    rpc GetToken (GetTokenRequest) returns (GetTokenResponse) {}
+}

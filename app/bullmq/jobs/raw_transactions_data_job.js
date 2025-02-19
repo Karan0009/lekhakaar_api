@@ -146,22 +146,22 @@ export default class RawTransactionsDataJob extends BaseJob {
       }
 
       const batchFolderName = 'openai_batch_files';
-      const batchFolderPath = join(__dirname, `../../../${batchFolderName}`);
+      const batchFolderPath = join(config.MEDIA_UPLOAD_PATH, batchFolderName);
       if (!fs.existsSync(batchFolderPath)) {
         await mkdir(batchFolderPath, { recursive: true });
       }
-      const batchFilePath = `${batchFolderName}/raw_transaction_batch_${newBatch.id}.jsonl`;
+      const batchFilePath = `${batchFolderPath}/raw_transaction_batch_${newBatch.id}.jsonl`;
 
       for (let i = 0; i < tasks.length; ++i) {
         await writeFile(batchFilePath, JSON.stringify(tasks[i]) + '\n', {
           flag: 'a',
         });
       }
-      const localFilePath = join(__dirname, '../../../', batchFilePath);
+
       let fileUploadRes;
       try {
         fileUploadRes = await openaiClient.files.create({
-          file: fs.createReadStream(localFilePath),
+          file: fs.createReadStream(batchFilePath),
           purpose: 'batch',
         });
       } catch (error) {

@@ -25,6 +25,11 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false,
       },
+      status: {
+        type: Sequelize.ENUM('ACTIVE', 'INACTIVE'),
+        allowNull: false,
+        defaultValue: 'ACTIVE',
+      },
       created_at: {
         type: Sequelize.DATE,
         allowNull: false,
@@ -36,9 +41,16 @@ module.exports = {
         defaultValue: Sequelize.fn('NOW'),
       },
     });
+
+    await queryInterface.addIndex('refresh_tokens', ['user_id', 'status']);
+    await queryInterface.addIndex('refresh_tokens', ['token', 'status']);
+    await queryInterface.addIndex('refresh_tokens', ['expiry_at']);
   },
 
   down: async (queryInterface) => {
+    await queryInterface.removeIndex('refresh_tokens', ['user_id', 'status']);
+    await queryInterface.removeIndex('refresh_tokens', ['token', 'status']);
+    await queryInterface.removeIndex('refresh_tokens', ['expiry_at']);
     await queryInterface.dropTable('refresh_tokens');
   },
 };

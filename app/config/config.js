@@ -3,7 +3,7 @@ dotenv.config({
   override: true,
 });
 const defaultConfig = {
-  APP_NAME: process.env.APP_NAME || 'expense-manager',
+  APP_NAME: process.env.APP_NAME || 'lekhakaar-api',
   PORT: process.env.PORT || 8000,
   PG_DATABASE: {
     username: process.env.PG_DB_USERNAME || 'fabnest-test',
@@ -60,7 +60,13 @@ const defaultConfig = {
   RAW_TRANSACTIONS_BATCHES_JOB_BATCH_SIZE: 20,
   times: {
     mins_30_in_ms: 1800000,
+    mins_15_in_s: 900,
+    mins_4_in_s: 120,
+    mins_2_in_s: 120,
+    mins_1_in_s: 60,
     mins_30_in_s: 1800,
+    hours_1_in_s: 3600,
+    hours_12_in_s: 43200,
     hours_24_in_s: 86400,
   },
   downloads_root_folder: 'downloads',
@@ -69,6 +75,11 @@ const defaultConfig = {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
+  SECRET_HASH_KEY: process.env.SECRET_HASH_KEY || 'secret-key',
+  WA_GRPC_SERVER_ADDRESS:
+    process.env.WA_GRPC_SERVER_ADDRESS || 'localhost:8088',
+  JWT_SECRET_KEY: process.env.SECRET_HASH_KEY,
+  MEDIA_UPLOAD_PATH: process.env.MEDIA_UPLOAD_PATH || '../../media_storage',
 };
 
 const config = { ...defaultConfig };
