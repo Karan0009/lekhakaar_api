@@ -13,7 +13,7 @@ services:
       # - wa_services_master_db
       - redis
     volumes:
-      - .:/opt/lekhakaar_api
+      # - .:/opt/lekhakaar_api
       - ../media_storage:/opt/media_storage
     ports:
       - '8000:8000'
@@ -32,7 +32,7 @@ services:
       # - wa_services_master_db
       - redis
     volumes:
-      - .:/opt/bull_mq
+      # - .:/opt/bull_mq
       - ../media_storage:/opt/media_storage
     networks:
       - lekhakaar_api_net
