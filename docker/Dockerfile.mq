@@ -2,7 +2,7 @@
 FROM node:20-alpine
 
 # Set working directory
-WORKDIR /app
+WORKDIR /opt/lekhakaar_mq
 
 # Copy package files and install dependencies
 COPY package.json package-lock.json ./
