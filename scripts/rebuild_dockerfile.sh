@@ -12,6 +12,7 @@ docker compose down
 
 echo "🧹 Removing old images..."
 docker image prune -a -f
+docker builder prune -a -f
 
 echo "🔄 Building new images..."
 docker compose build
