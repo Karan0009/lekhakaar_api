@@ -82,7 +82,12 @@ class AuthController {
       res.set('Retry-After', retryAfter);
       return res.status(HttpStatusCode.Ok).json({
         message: 'otp sent successfully',
-        data: { otp_code: newOtp.id, phone_number: phone_number },
+        data: {
+          otp_code: newOtp.id,
+          phone_number: phone_number,
+          retry_after: config.times.mins_2_in_s,
+          valid_till: config.times.mins_15_in_s,
+        },
         success: true,
       });
     } catch (error) {
