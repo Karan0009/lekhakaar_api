@@ -1,6 +1,6 @@
 import { transports, format, createLogger } from 'winston';
 import { getNamespace } from 'cls-hooked';
-import config from '../config/config';
+import config from '../config/config.js';
 
 const { combine, ms, timestamp, json, errors, colorize, prettyPrint } = format;
 
