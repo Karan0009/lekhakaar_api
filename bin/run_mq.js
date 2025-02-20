@@ -28,7 +28,7 @@ async function run() {
     new RawTransactionsDataJob(),
     new RawTransactionsBatchesJob(),
   ];
-  await cronChecker.startCronChecker(config.times.mins_30_in_ms, jobInstances);
+  // await cronChecker.startCronChecker(config.times.mins_30_in_ms, jobInstances);
 }
 
 (async () => {

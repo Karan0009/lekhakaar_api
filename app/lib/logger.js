@@ -1,5 +1,6 @@
 import { transports, format, createLogger } from 'winston';
 import { getNamespace } from 'cls-hooked';
+import config from '../config/config';
 
 const { combine, ms, timestamp, json, errors, colorize, prettyPrint } = format;
 
@@ -33,7 +34,7 @@ function getLoggerFormats() {
         debug: 'blue',
         warn: 'yellow',
       },
-    })
+    }),
   );
 
   const fileFormat = combine(
@@ -41,7 +42,7 @@ function getLoggerFormats() {
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss:sss:Z' }),
     addRequestSessionData(),
     timestamp(),
-    json()
+    json(),
   );
 
   return { consoleFormat, fileFormat };
@@ -55,12 +56,12 @@ function getDefaultLogger() {
     transports: [
       new transports.Console({ format: consoleFormat }),
       new transports.File({
-        filename: 'log/error.log',
+        filename: `${config.MEDIA_UPLOAD_PATH}/lekhakaar_api_mq/log/error.log`,
         level: 'error',
         format: fileFormat,
       }),
       new transports.File({
-        filename: 'log/combined.log',
+        filename: `${config.MEDIA_UPLOAD_PATH}/lekhakaar_api_mq/log/combined.log`,
         format: fileFormat,
       }),
     ],
