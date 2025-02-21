@@ -229,16 +229,24 @@ class AuthController {
         refresh_token,
       );
 
-      const allTokens = await refreshTokenService.getAllTokensForUser(
-        refreshToken.user_id,
-      );
+      if (!isValid) {
+        return res.status(HttpStatusCode.Unauthorized).json({
+          message: 'invalid token',
+          data: null,
+          success: false,
+        });
+      }
+
+      const allTokens = (
+        await refreshTokenService.getAllTokensForUser(refreshToken.user_id)
+      ).map((t) => t.token);
       let tokensToBeRevoked = [];
       if (!logout_type || logout_type === 'all_other') {
-        tokensToBeRevoked = allTokens.filter((t) => t.token !== refresh_token);
+        tokensToBeRevoked = allTokens.filter((t) => t !== refresh_token);
       } else if (logout_type === 'all') {
         tokensToBeRevoked = [...allTokens];
       } else if (logout_type === 'self') {
-        tokensToBeRevoked = allTokens.filter((t) => t.token === refresh_token);
+        tokensToBeRevoked = allTokens.filter((t) => t === refresh_token);
       }
 
       await refreshTokenService.removeGivenTokensForUser(
