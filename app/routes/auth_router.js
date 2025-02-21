@@ -7,6 +7,7 @@ const authRouter = express.Router();
 authRouter.post(
   '/otp',
   body('phone_number').isNumeric({ no_symbols: true }),
+  body('are_terms_accepted').isIn(['Y']).trim().notEmpty(),
   authController.sendOtp,
 );
 authRouter.post(
