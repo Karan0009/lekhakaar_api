@@ -72,11 +72,13 @@ class AuthController {
         },
       };
 
-      const waClientGrpcSendOtpRes = await sendOtpMessage(requestPayload);
-      if (!waClientGrpcSendOtpRes.success) {
-        this._logger.error('failed to send otp', { waClientGrpcSendOtpRes });
-      } else {
-        this._logger.info('otp sent successfully');
+      if (config.APP_ENV !== 'development') {
+        const waClientGrpcSendOtpRes = await sendOtpMessage(requestPayload);
+        if (!waClientGrpcSendOtpRes.success) {
+          this._logger.error('failed to send otp', { waClientGrpcSendOtpRes });
+        } else {
+          this._logger.info('otp sent successfully');
+        }
       }
 
       res.set('Retry-After', retryAfter);
@@ -136,7 +138,11 @@ class AuthController {
         });
       }
 
-      const newRefreshToken = await refreshTokenService.generateToken(user.id);
+      const deviceFingerprint = utils.getDeviceFingerprint(req);
+      const newRefreshToken = await refreshTokenService.generateToken(
+        user.id,
+        deviceFingerprint,
+      );
       const newAccessToken = await jwt.generateToken(
         { user_id: user.id },
         '15m',

@@ -79,6 +79,18 @@ class Utils {
       .update(str)
       .digest('hex');
   }
+
+  /**
+   * @param {import('express').Request} req
+   */
+  getDeviceFingerprint(req) {
+    const userAgent = req.headers['user-agent'] || '';
+    const acceptLanguage = req.headers['accept-language'] || '';
+    const ip = req.ip;
+
+    const fingerprintData = `${userAgent}-${acceptLanguage}-${ip}`;
+    return crypto.createHash('sha256').update(fingerprintData).digest('hex');
+  }
 }
 
 export default new Utils();

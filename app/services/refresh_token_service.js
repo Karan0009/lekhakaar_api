@@ -32,7 +32,7 @@ class RefreshTokenService {
    * @param {string} userId - The user's ID.
    * @returns {Promise<string>} - The new refresh token.
    */
-  async generateToken(userId) {
+  async generateToken(userId, deviceFingerprint) {
     try {
       const token = utils.generateRandomToken(64); // Generate a secure token
       const expiryDate = utils.getDayJsObj().add(30, 'days');

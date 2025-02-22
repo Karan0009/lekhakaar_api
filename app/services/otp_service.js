@@ -3,6 +3,7 @@ import Otp, { OTP_STATUSES } from '../models/otp.js';
 import utils from '../lib/utils.js';
 import { LoggerFactory } from '../lib/logger.js';
 import redis from '../lib/redis.js';
+import config from '../config/config.js';
 
 class OtpService {
   constructor() {
@@ -15,7 +16,10 @@ class OtpService {
    * @returns {Promise<{newOtp:Otp,otpCode:string}>} - The created OTP record.
    */
   async generateOtp(otpLength, otpLifeDurationInSec) {
-    const otpCode = utils.generateRandomDigits(otpLength);
+    const otpCode =
+      config.APP_ENV === 'testing'
+        ? '121212'
+        : utils.generateRandomDigits(otpLength);
     const expiryTime = utils
       .getDayJsObj()
       .add(otpLifeDurationInSec, 'seconds')
@@ -53,18 +57,7 @@ class OtpService {
       { status: OTP_STATUSES.VERIFIED },
       { where: { id: otpId } },
     );
-
-    // const otpRecord = await Otp.findOne({
-    //   where: {
-    //     id: otpId,
-    //     status: OTP_STATUSES.PENDING,
-    //   },
-    // });
-
-    // if (!otpRecord || otpRecord.otp_code !== hashedOtp) {
-    //   this._logger.info('invalid otp');
-    //   return false;
-    // }
+    await redis.del(userOtpVerifyKey);
 
     this._logger.info('otp verified successfully');
     return true;

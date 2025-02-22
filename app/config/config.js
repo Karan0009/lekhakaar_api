@@ -5,6 +5,8 @@ dotenv.config({
 const defaultConfig = {
   APP_NAME: process.env.APP_NAME || 'lekhakaar-api',
   PORT: process.env.PORT || 8000,
+  NODE_ENV: process.env.NODE_ENV || 'production',
+  APP_ENV: process.env.APP_ENV || 'production',
   PG_DATABASE: {
     username: process.env.PG_DB_USERNAME || 'fabnest-test',
     password: process.env.PG_DB_PASSWORD || 'fabnest-test',
