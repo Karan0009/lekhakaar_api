@@ -353,7 +353,7 @@ export default class RawTransactionsBatchesJob extends BaseJob {
       const newUserTransaction = await UserTransaction.create(
         {
           user_id: rawTrxn.user_id,
-          category_id: null,
+          sub_cat_id: null,
           amount: response.amount,
           transaction_datetime: response.datetime,
           recipient_name: response.recipient,

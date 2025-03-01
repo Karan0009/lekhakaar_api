@@ -19,8 +19,8 @@ UserTransaction.init(
       type: DataTypes.UUID,
       allowNull: false,
     },
-    category_id: {
-      type: DataTypes.UUID,
+    sub_cat_id: {
+      type: DataTypes.BIGINT,
       allowNull: true,
     },
     amount: {

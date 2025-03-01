@@ -1,24 +1,30 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../lib/sequelize.js';
 
+const CATEGORY_STATUSES = {
+  active: 'active',
+  inactive: 'inactive',
+};
+
 export default class Category extends Model {}
 
 Category.init(
   {
     id: {
-      type: DataTypes.UUID,
+      type: DataTypes.BIGINT,
+      autoIncrement: true,
       primaryKey: true,
-    },
-    user_id: {
-      type: DataTypes.UUID,
-      allowNull: true,
     },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    status: {
+    description: {
       type: DataTypes.STRING,
+      allowNull: true,
+    },
+    status: {
+      type: DataTypes.ENUM(...Object.values(CATEGORY_STATUSES)),
       allowNull: false,
     },
   },
@@ -28,3 +34,5 @@ Category.init(
     tableName: 'categories',
   },
 );
+
+export { CATEGORY_STATUSES };
