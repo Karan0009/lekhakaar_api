@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "npx nodemon --inspect=0.0.0.0:9229 ./bin/run.js",
     "start": "node ./bin/run.js",
+    "start_api": "node ./bin/run.js",
     "start_mq": "node ./bin/run_mq.js",
+    "dev_api": "npx nodemon --inspect=0.0.0.0:9229 ./bin/run.js",
     "dev_mq": "npx nodemon --inspect=0.0.0.0:9230 ./bin/run_mq.js"
   },
   "keywords": [],
@@ -27,7 +29,9 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "express-validator": "^7.2.1",
+    "http-errors": "^2.0.0",
     "ioredis": "^5.4.1",
+    "jsonapi-serializer": "^3.6.9",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^2.5.2",
     "openai": "^4.75.0",

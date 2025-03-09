@@ -14,20 +14,20 @@ QuarterlySummarizedUserTransaction.init(
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: User,
+        model: 'users',
         key: 'id',
       },
     },
     sub_category_id: {
       type: DataTypes.BIGINT,
-      allowNull: true,
+      allowNull: false,
       references: {
         model: 'sub_categories',
         key: 'id',
       },
     },
     quarter_start: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATEONLY,
       allowNull: false,
     },
     amount: {

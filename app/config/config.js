@@ -5,8 +5,8 @@ dotenv.config({
 const defaultConfig = {
   APP_NAME: process.env.APP_NAME || 'lekhakaar-api',
   PORT: process.env.PORT || 8000,
-  NODE_ENV: process.env.NODE_ENV || 'production',
-  APP_ENV: process.env.APP_ENV || 'production',
+  NODE_ENV: process.env.NODE_ENV || 'development',
+  APP_ENV: process.env.APP_ENV || 'development',
   PG_DATABASE: {
     username: process.env.PG_DB_USERNAME || 'fabnest-test',
     password: process.env.PG_DB_PASSWORD || 'fabnest-test',
@@ -82,6 +82,24 @@ const defaultConfig = {
     process.env.WA_GRPC_SERVER_ADDRESS || 'localhost:8088',
   JWT_SECRET_KEY: process.env.SECRET_HASH_KEY,
   MEDIA_UPLOAD_PATH: process.env.MEDIA_UPLOAD_PATH || '../../media_storage',
+  ORDER_BY: {
+    desc: 'DESC',
+    asc: 'ASC',
+  },
+  SUMMARY_TYPE: {
+    daily: 'daily',
+    weekly: 'weekly',
+    monthly: 'monthly',
+    quarterly: 'quarterly',
+    yearly: 'yearly',
+  },
+  SUMMARY_TYPE_DATE_KEYS: {
+    daily: 'day_start',
+    weekly: 'week_start',
+    monthly: 'month_start',
+    quarterly: 'quarter_start',
+    yearly: 'year_start',
+  },
 };
 
 const config = { ...defaultConfig };

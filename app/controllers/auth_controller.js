@@ -9,6 +9,7 @@ import { sendOtpMessage } from '../../grpc_client/wa_grpc_client.js';
 import { HttpStatusCode } from 'axios';
 import refreshTokenService from '../services/refresh_token_service.js';
 import jwt from '../lib/jwt.js';
+import createHttpError from 'http-errors';
 
 class AuthController {
   constructor() {
@@ -222,12 +223,13 @@ class AuthController {
     try {
       const isBodyValid = validationResult(req);
       if (!isBodyValid.isEmpty()) {
-        return res.status(HttpStatusCode.BadRequest).json({
-          data: null,
-          success: false,
-          message: 'invalid params',
-          errors: isBodyValid.array(),
-        });
+        throw createHttpError(HttpStatusCode.BadRequest, 'invalid params');
+        // return res.status(HttpStatusCode.BadRequest).json({
+        //   data: null,
+        //   success: false,
+        //   message: 'invalid params',
+        //   errors: isBodyValid.array(),
+        // });
       }
       const { refresh_token, logout_type } = req.body;
 

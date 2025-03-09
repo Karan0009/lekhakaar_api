@@ -5,6 +5,10 @@ import timezone from 'dayjs/plugin/timezone.js';
 import crypto from 'crypto';
 import config from '../config/config.js';
 
+dayjs.locale('en', { weekStart: 1 });
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 class Utils {
   constructor() {}
 
@@ -27,8 +31,6 @@ class Utils {
    */
   getDayJsObj(datetime, tz = 'utc', inputFormat = '') {
     try {
-      dayjs.extend(utc);
-      dayjs.extend(timezone);
       const res = datetime
         ? inputFormat != ''
           ? dayjs(datetime, inputFormat).tz(tz)
@@ -90,6 +92,73 @@ class Utils {
 
     const fingerprintData = `${userAgent}-${acceptLanguage}-${ip}`;
     return crypto.createHash('sha256').update(fingerprintData).digest('hex');
+  }
+
+  meta(req, count) {
+    const totalPages = Math.ceil(count / req.query.limit);
+    const nextPageNumber =
+      req.query.page < totalPages ? req.query.page + 1 : null;
+    return {
+      totalCount: count,
+      totalPages,
+      lastPage: totalPages,
+      nextPageNumber: nextPageNumber,
+    };
+  }
+  metaData(count, pageSize, pageNumber) {
+    const totalPages = Math.ceil(count / pageSize);
+    const nextPageNumber = pageNumber < totalPages ? pageNumber + 1 : null;
+    return {
+      total_count: count,
+      total_pages: totalPages,
+      current_page: pageNumber,
+      next_page: nextPageNumber,
+      last_page: totalPages,
+      limit: pageSize,
+    };
+  }
+
+  /**
+   * @param {dayjs.Dayjs} dayjsObj
+   * @returns string
+   */
+  getWeekStartDate(dayjsObj) {
+    return dayjsObj.startOf('week').format('YYYY-MM-DD');
+  }
+
+  /**
+   * @param {dayjs.Dayjs} dayjsObj
+   * @returns string
+   */
+  getMonthStartDate(dayjsObj) {
+    return dayjsObj.startOf('month').format('YYYY-MM-DD');
+  }
+
+  /**
+   *
+   * @param {dayjs.Dayjs} dayjsObj
+   * @returns string
+   */
+  getQuarterStartDate(dayjsObj) {
+    const month = dayjsObj.month();
+    const quarterStartMonth = Math.floor(month / 3) * 3;
+
+    return dayjsObj
+      .month(quarterStartMonth)
+      .startOf('month')
+      .format('YYYY-MM-DD');
+  }
+
+  /**
+   * @param {dayjs.Dayjs} dayjsObj
+   * @returns string
+   */
+  getYearStartDate(dayjsObj) {
+    return dayjsObj.startOf('year').format('YYYY-MM-DD');
+  }
+
+  formatAmount(decimalAmount) {
+    return parseInt(decimalAmount * 100);
   }
 }
 

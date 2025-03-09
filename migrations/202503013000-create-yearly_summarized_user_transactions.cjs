@@ -19,14 +19,14 @@ module.exports = {
       },
       sub_category_id: {
         type: Sequelize.BIGINT,
-        allowNull: true,
+        allowNull: false,
         references: {
           model: 'sub_categories',
           key: 'id',
         },
       },
       year_start: {
-        type: Sequelize.DATE,
+        type: Sequelize.DATEONLY,
         allowNull: false,
       },
       amount: {
@@ -36,12 +36,12 @@ module.exports = {
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW,
+        defaultValue: Sequelize.fn('NOW'),
       },
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW,
+        defaultValue: Sequelize.fn('NOW'),
       },
     });
 

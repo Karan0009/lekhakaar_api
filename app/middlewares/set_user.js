@@ -2,6 +2,7 @@ import jwt from '../lib/jwt.js';
 import userService from '../services/user_service.js';
 import { HttpStatusCode } from 'axios';
 import config from '../config/config.js';
+import createHttpError from 'http-errors';
 
 /**
  *
@@ -17,39 +18,44 @@ const setUser = async (req, res, next) => {
     ) {
       const user_id = req.query.user_id;
       req.user = await userService.getUserById(user_id);
-      next();
+      return next();
     }
 
     const authHeader = req.headers['authorization'];
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(HttpStatusCode.Unauthorized).json({
-        message: 'Unauthorized: No token provided',
-        success: false,
-      });
+      return next(
+        createHttpError(
+          HttpStatusCode.Unauthorized,
+          'Unauthorized: No token provided',
+        ),
+      );
     }
 
     const token = authHeader.split(' ')[1];
     const decoded = await jwt.verifyToken(token);
 
     if (!decoded || !decoded.user_id) {
-      return res.status(HttpStatusCode.Unauthorized).json({
-        message: 'Unauthorized: Invalid token',
-        success: false,
-      });
+      return next(
+        createHttpError(
+          HttpStatusCode.Unauthorized,
+          'Unauthorized: Invalid token',
+        ),
+      );
     }
 
     const user = await userService.getUserById(decoded.user_id);
     if (!user) {
-      return res.status(HttpStatusCode.Unauthorized).json({
-        message: 'Unauthorized: User not found',
-        success: false,
-      });
+      return next(
+        createHttpError(
+          HttpStatusCode.Unauthorized,
+          'Unauthorized: User not found',
+        ),
+      );
     }
 
     req.user = user;
     next();
   } catch (error) {
-    console.error('Error in setUserMiddleware:', error);
     next(error);
   }
 };

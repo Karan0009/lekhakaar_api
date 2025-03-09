@@ -8,12 +8,10 @@ import OpenaiBatch, {
   OPENAI_BATCH_STATUS,
 } from '../../models/openai_batch.js';
 import openaiClient from '../../lib/openai/openai.js';
-import UserTransaction, {
-  USER_TRANSACTION_STATUSES,
-} from '../../models/user_transaction.js';
-import UncategorizedTransaction from '../../models/uncategorized_transactions.js';
 import sequelize from '../../lib/sequelize.js';
 import utils from '../../lib/utils.js';
+import uncategorizedTransactionService from '../../services/uncategorized_transaction_service.js';
+import UserTransactionService from '../../services/user_transaction_service.js';
 
 export default class RawTransactionsBatchesJob extends BaseJob {
   constructor() {
@@ -350,31 +348,27 @@ export default class RawTransactionsBatchesJob extends BaseJob {
         );
         continue;
       }
-      const newUserTransaction = await UserTransaction.create(
-        {
-          user_id: rawTrxn.user_id,
-          sub_cat_id: null,
-          amount: response.amount,
-          transaction_datetime: response.datetime,
-          recipient_name: response.recipient,
-          meta: response,
-          status: USER_TRANSACTION_STATUSES.EXTRACTED,
-        },
-        {
+      const userTransactionService = new UserTransactionService();
+      // TODO: FETCH UNCATEGORIZED SUB_CATEGORY AND THEN USE IT'S ID
+      const newUserTransaction =
+        await userTransactionService.createUserTransaction(
+          {
+            user_id: rawTrxn.user_id,
+            sub_cat_id: 1, // uncategorized transaction id
+            amount: response.amount,
+            transaction_datetime: response.datetime,
+            recipient_name: response.recipient,
+            meta: response,
+          },
           transaction,
-        },
-      );
+        );
 
       // TODO: AFTER AUTO CATEGORIZATION IS DONE CHANGE THIS CODE
 
-      await UncategorizedTransaction.create(
-        {
-          user_id: rawTrxn.user_id,
-          transaction_id: newUserTransaction.id,
-        },
-        {
-          transaction,
-        },
+      await uncategorizedTransactionService.create(
+        newUserTransaction.id,
+        rawTrxn.user_id,
+        transaction,
       );
 
       await rawTrxn.update(

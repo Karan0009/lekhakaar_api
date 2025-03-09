@@ -24,12 +24,12 @@ module.exports = {
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW,
+        defaultValue: Sequelize.fn('NOW'),
       },
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW,
+        defaultValue: Sequelize.fn('NOW'),
       },
     });
 
@@ -37,6 +37,7 @@ module.exports = {
   },
   down: async (queryInterface) => {
     await queryInterface.removeIndex('categories', ['status']);
+
     await queryInterface.dropTable('categories');
   },
 };

@@ -5,7 +5,11 @@
       "name": "Attach to Process",
       "type": "node",
       "request": "attach",
-      "port": 9229
+      "restart": true,
+      "port": 9229,
+      "localRoot": "${workspaceFolder}",
+      "remoteRoot": "/opt/lekhakaar_api",
+      "sourceMaps": true
     }
   ]
 }

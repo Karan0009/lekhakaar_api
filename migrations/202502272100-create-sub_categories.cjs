@@ -35,16 +35,17 @@ module.exports = {
       status: {
         type: Sequelize.ENUM('active', 'inactive'),
         allowNull: false,
+        defaultValue: 'active',
       },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW,
+        defaultValue: Sequelize.fn('NOW'),
       },
       updated_at: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW,
+        defaultValue: Sequelize.fn('NOW'),
       },
     });
 

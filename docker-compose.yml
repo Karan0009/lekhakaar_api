@@ -10,17 +10,18 @@ services:
     networks:
       - lekhakaar_api_net
     depends_on:
-      # - wa_services_master_db
+      # - em_services_master_db
       - redis
     volumes:
       # - .:/opt/lekhakaar_api
+      # - /opt/lekhakaar_api/node_modules
       - ../media_storage:/opt/media_storage
     ports:
       - '8000:8000'
-      - '9229:9229'
+      # - '9229:9229'
     env_file:
       - .env
-    command: ['node', 'bin/run.js']
+    command: ['npm', 'run', 'start_api']
 
   bull_mq:
     build:
@@ -29,22 +30,22 @@ services:
     platform: linux/amd64
     restart: unless-stopped
     depends_on:
-      # - wa_services_master_db
+      # - em_services_master_db
       - redis
     volumes:
       # - .:/opt/bull_mq
       - ../media_storage:/opt/media_storage
     networks:
       - lekhakaar_api_net
-    ports:
-      - '9230:9230'
+    # ports:
+    # - '9230:9230'
     env_file:
       - .env
-    command: ['node', 'bin/run_mq.js']
+    command: ['node', 'run', 'start_mq']
 
   # em_service_master_db:
   #   image: postgres:latest
-  #   container_name: wa_services_master_db
+  #   container_name: em_services_master_db
   #   environment:
   #     - POSTGRES_DB=lekhakaar
   #     - POSTGRES_USER=fabnest-test
@@ -57,7 +58,7 @@ services:
   #   ports:
   #     - 5432:5432
   #   volumes:
-  #     - wa_service_db_data:/var/lib/postgresql/data
+  #     - em_service_db_data:/var/lib/postgresql/data
 
   redis:
     image: redis

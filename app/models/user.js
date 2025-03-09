@@ -40,3 +40,5 @@ User.init(
     },
   },
 );
+
+export { USER_STATUSES };

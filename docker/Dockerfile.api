@@ -5,14 +5,20 @@ FROM node:20-alpine
 WORKDIR /opt/lekhakaar_api
 
 # Copy package files and install dependencies
-COPY package.json package-lock.json ./
-RUN npm ci
+
+RUN adduser --uid 100001 --disabled-password appuser && \
+    mkdir -p /opt/lekhakaar_api && \
+    mkdir -p /opt/media_storage
+
+COPY --chown=appuser:appuser package.json package-lock.json ./
+RUN npm cache clean --force && \
+    rm -rf /root/.npm && \
+    npm ci --force && \
+    chown -R appuser:appuser /opt/lekhakaar_api && \
+    chown -R appuser:appuser /opt/media_storage
 
 # Copy source files
-COPY . .
-
-# Set environment variables
-ENV NODE_ENV=production
+COPY --chown=appuser:appuser . .
 
 # Start the application
-CMD ["node", "./bin/run.js"]
+CMD ["node","run", "start_api"]

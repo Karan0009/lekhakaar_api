@@ -1,13 +1,16 @@
-import { validationResult } from 'express-validator';
 import { LoggerFactory } from '../lib/logger.js';
-import { UserTransactionSerializer } from '../serializers/user_transaction_serializer.js';
-import UserTransactionService from '../services/user_transaction_service.js';
+import TransactionSummaryService from '../services/transaction_summary_service.js';
+import { validationResult } from 'express-validator';
 import createHttpError from 'http-errors';
-import utils from '../lib/utils.js';
+import { HttpStatusCode } from 'axios';
+import UserTransactionService from '../services/user_transaction_service.js';
 
-class TransactionController {
+import { SummarizedUserTransactionsSerializer } from '../serializers/summarized_user_transactions_serializer.js';
+
+class TransactionSummaryController {
   constructor() {
-    this._logger = new LoggerFactory('TransactionController').logger;
+    this._logger = new LoggerFactory('TransactionSummaryController').logger;
+    this._transactionSummaryService = new TransactionSummaryService();
     this._userTransactionService = new UserTransactionService();
   }
 
@@ -17,7 +20,7 @@ class TransactionController {
    * @param {import('express').Response} res
    * @param {import('express').NextFunction} next
    */
-  index = async (req, res, next) => {
+  getSummary = async (req, res, next) => {
     try {
       const isBodyValid = validationResult(req);
       if (!isBodyValid.isEmpty()) {
@@ -34,32 +37,27 @@ class TransactionController {
       const {
         order_by: orderBy,
         sort_by: sortBy,
+        summary_type: summaryType,
         on_date: onDate,
         sub_cat_id: subCatId,
-        limit,
-        offset,
-        page,
       } = req.query;
 
-      const { count, rows } =
-        await this._userTransactionService.countAndGetTransactionsList(
+      const summaries =
+        await this._userTransactionService.getSummarizedUserTransactionsByUserId(
           user.id,
-          onDate,
+          summaryType,
           onDate,
           subCatId,
           {
-            limit,
-            offset,
             orderBy,
             sortBy,
           },
         );
 
-      const serializedData = UserTransactionSerializer.serialize(
-        rows.map((item) => item.toJSON()),
+      const serializedData = SummarizedUserTransactionsSerializer.serialize(
+        summaries.map((item) => item.toJSON()),
       );
 
-      serializedData.meta = utils.metaData(count, limit, page);
       serializedData.filters = {
         order_by: orderBy,
         sort_by: sortBy,
@@ -68,10 +66,10 @@ class TransactionController {
 
       return res.json(serializedData);
     } catch (error) {
-      this._logger.error('error in TransactionController index', { error });
+      this._logger.error('error in getSummary', { error });
       next(error);
     }
   };
 }
 
-export default new TransactionController();
+export default new TransactionSummaryController();

@@ -20,14 +20,14 @@ MonthlySummarizedUserTransaction.init(
     },
     sub_category_id: {
       type: DataTypes.BIGINT,
-      allowNull: true,
+      allowNull: false,
       references: {
         model: 'sub_categories',
         key: 'id',
       },
     },
     month_start: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATEONLY,
       allowNull: false,
     },
     amount: {
