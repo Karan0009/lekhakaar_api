@@ -41,7 +41,7 @@ services:
     # - '9230:9230'
     env_file:
       - .env
-    command: ['node', 'run', 'start_mq']
+    command: ['npm', 'run', 'start_mq']
 
   # em_service_master_db:
   #   image: postgres:latest
