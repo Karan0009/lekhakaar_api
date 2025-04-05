@@ -6,6 +6,7 @@ import { HttpStatusCode } from 'axios';
 import UserTransactionService from '../services/user_transaction_service.js';
 
 import { SummarizedUserTransactionsSerializer } from '../serializers/summarized_user_transactions_serializer.js';
+import utils from '../lib/utils.js';
 
 class TransactionSummaryController {
   constructor() {
@@ -58,7 +59,9 @@ class TransactionSummaryController {
         summaries.map((item) => item.toJSON()),
       );
 
-      serializedData.filters = {
+      serializedData.meta = utils.meta(req, 0);
+
+      serializedData.meta.filters = {
         order_by: orderBy,
         sort_by: sortBy,
         on_date: onDate,

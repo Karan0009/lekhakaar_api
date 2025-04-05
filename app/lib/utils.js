@@ -99,10 +99,10 @@ class Utils {
     const nextPageNumber =
       req.query.page < totalPages ? req.query.page + 1 : null;
     return {
-      totalCount: count,
-      totalPages,
-      lastPage: totalPages,
-      nextPageNumber: nextPageNumber,
+      total_count: count,
+      total_pages: totalPages,
+      last_page: totalPages,
+      next_page_number: nextPageNumber,
     };
   }
   metaData(count, pageSize, pageNumber) {
