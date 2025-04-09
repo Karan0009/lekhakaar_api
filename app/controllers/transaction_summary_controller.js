@@ -58,19 +58,27 @@ class TransactionSummaryController {
           },
         );
 
-      const serializedData = SummarizedUserTransactionsSerializer.serialize(
-        summaries.map((item) => item.toJSON()),
-      );
+      // TODO: SEND SERIALIZED DATA SOMEDAY!
+      // const serializedData = SummarizedUserTransactionsSerializer.serialize(
+      //   summaries.map((item) => item.toJSON()),
+      // );
+      // serializedData.meta = utils.meta(req, 0);
 
-      serializedData.meta = utils.meta(req, 0);
+      // serializedData.meta.filters = {
+      //   order_by: orderBy,
+      //   sort_by: sortBy,
+      //   on_date: onDate,
+      // };
+      const summariesList = summaries.map((item) => item.toJSON());
 
-      serializedData.meta.filters = {
+      const meta = utils.meta(req, summariesList.length);
+      meta.filters = {
         order_by: orderBy,
         sort_by: sortBy,
         on_date: onDate,
       };
 
-      return res.json(serializedData);
+      return res.json({ data: summariesList, meta });
     } catch (error) {
       this._logger.error('error in getSummary', { error });
       next(error);
