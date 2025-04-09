@@ -89,7 +89,8 @@ export default class UserTransactionService {
       throw new Error('invalid onDate');
     }
 
-    const { dateKey, durationType } = this._getSummaryMeta(summaryType);
+    const { durationType } = this._getSummaryMeta(summaryType);
+    const DATE_SUMMARY_START_LABEL = 'summary_start';
 
     const whereObject = {
       user_id: userId,
@@ -107,7 +108,7 @@ export default class UserTransactionService {
     if (options.sortBy === 'amount') {
       sortBy = 'total_amount';
     } else {
-      sortBy = dateKey;
+      sortBy = DATE_SUMMARY_START_LABEL;
     }
 
     const attributes = [
@@ -118,7 +119,7 @@ export default class UserTransactionService {
           'DATE',
           fn('DATE_TRUNC', `${durationType}`, col('transaction_datetime')),
         ),
-        dateKey,
+        DATE_SUMMARY_START_LABEL,
       ],
       'sub_cat_id',
     ];
@@ -127,7 +128,7 @@ export default class UserTransactionService {
       '"UserTransaction"."user_id"',
       'UserTransaction.sub_cat_id',
       'SubCategory.id',
-      dateKey,
+      DATE_SUMMARY_START_LABEL,
     ];
     const includes = [];
     includes.push({

@@ -76,6 +76,8 @@ class TransactionSummaryController {
         order_by: orderBy,
         sort_by: sortBy,
         on_date: onDate,
+        summary_type: summaryType,
+        sub_cat_id: subCatId,
       };
 
       return res.json({ data: summariesList, meta });
