@@ -6,6 +6,7 @@ import UserTransaction, {
   USER_TRANSACTION_STATUSES,
 } from '../models/user_transaction.js';
 import config from '../config/config.js';
+import SubCategory from '../models/sub_category.js';
 
 export default class UserTransactionService {
   constructor() {
@@ -54,20 +55,24 @@ export default class UserTransactionService {
   }
 
   /**
-   * upsert yearly summary
-   * @param {string} userId
-   * @param {'weekly' | 'monthly' | 'quarterly' | 'yearly'} summaryType
-   * @param {*} sqlTransaction
-   * @returns {Promise<any>}
+   *
+   * @param {{
+   *  userId: string,
+   *  summaryType: string,
+   *  onDate: string,
+   *  subCatId: string,
+   *  options: { orderBy: string, sortBy: string },
+   *  sqlTransaction: any }} data
+   * @returns {Promise<any[]>}
    */
-  async getSummarizedUserTransactionsByUserId(
+  async getSummarizedUserTransactionsByUserId({
     userId,
     summaryType,
     onDate,
-    subCategoryId,
+    subCatId,
     options,
     sqlTransaction = null,
-  ) {
+  }) {
     if (
       options.orderBy !== config.ORDER_BY.asc &&
       options.orderBy !== config.ORDER_BY.desc
@@ -115,22 +120,24 @@ export default class UserTransactionService {
         ),
         dateKey,
       ],
+      'sub_cat_id',
     ];
 
-    const groupBy = ['"UserTransaction"."user_id"', dateKey];
-
+    const groupBy = [
+      '"UserTransaction"."user_id"',
+      'UserTransaction.sub_cat_id',
+      'SubCategory.id',
+      dateKey,
+    ];
     const includes = [];
+    includes.push({
+      model: SubCategory,
+      required: true,
+      attributes: ['id', 'name', 'icon', 'description'],
+    });
 
-    if (subCategoryId) {
-      whereObject.sub_cat_id = subCategoryId;
-      attributes.push('sub_cat_id');
-      groupBy.push('sub_cat_id');
-      includes.push([
-        {
-          model: models.SubCategory,
-          attributes: ['id', 'name', 'description'],
-        },
-      ]);
+    if (subCatId != undefined && subCatId != null) {
+      whereObject.sub_cat_id = subCatId;
     }
 
     const userTransactions = await models.UserTransaction.findAll({
@@ -194,7 +201,7 @@ export default class UserTransactionService {
 
     const includes = [
       {
-        model: models.SubCategory,
+        model: SubCategory,
         attributes: ['id', 'name', 'description'],
       },
     ];

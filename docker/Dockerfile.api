@@ -21,4 +21,4 @@ RUN npm cache clean --force && \
 COPY --chown=appuser:appuser . .
 
 # Start the application
-CMD ["node","run", "start_api"]
+CMD ["npm", "run", "start_api"]

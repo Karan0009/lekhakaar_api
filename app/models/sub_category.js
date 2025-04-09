@@ -41,6 +41,10 @@ SubCategory.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    icon: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     status: {
       type: DataTypes.ENUM(...Object.values(SUB_CATEGORY_STATUSES)),
       allowNull: false,

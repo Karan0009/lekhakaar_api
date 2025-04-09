@@ -45,13 +45,16 @@ class TransactionSummaryController {
 
       const summaries =
         await this._userTransactionService.getSummarizedUserTransactionsByUserId(
-          user.id,
-          summaryType,
-          onDate,
-          subCatId,
           {
-            orderBy,
-            sortBy,
+            summaryType: summaryType,
+            userId: user.id,
+            onDate: onDate,
+            subCatId: subCatId,
+            options: {
+              orderBy,
+              sortBy,
+            },
+            sqlTransaction: null,
           },
         );
 
