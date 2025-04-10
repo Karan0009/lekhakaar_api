@@ -40,6 +40,8 @@ class TransactionSummaryController {
         sort_by: sortBy,
         summary_type: summaryType,
         on_date: onDate,
+        from_date: fromDate,
+        to_date: toDate,
         sub_cat_id: subCatId,
       } = req.query;
 
@@ -49,6 +51,8 @@ class TransactionSummaryController {
             summaryType: summaryType,
             userId: user.id,
             onDate: onDate,
+            fromDate: fromDate,
+            toDate: toDate,
             subCatId: subCatId,
             options: {
               orderBy,

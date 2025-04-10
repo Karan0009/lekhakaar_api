@@ -69,6 +69,8 @@ export default class UserTransactionService {
     userId,
     summaryType,
     onDate,
+    fromDate,
+    toDate,
     subCatId,
     options,
     sqlTransaction = null,
@@ -84,11 +86,6 @@ export default class UserTransactionService {
       throw new Error('Invalid sort by column');
     }
 
-    const dateObj = utils.getDayJsObj(new Date(onDate));
-    if (!dateObj) {
-      throw new Error('invalid onDate');
-    }
-
     const { durationType } = this._getSummaryMeta(summaryType);
     const DATE_SUMMARY_START_LABEL = 'summary_start';
 
@@ -97,9 +94,31 @@ export default class UserTransactionService {
     };
 
     if (onDate) {
+      const onDateObj = utils.getDayJsObj(new Date(onDate));
+      if (!onDateObj) {
+        throw new Error('invalid on_date');
+      }
       whereObject[Op.and] = [
         literal(
           `DATE_TRUNC('${durationType}', "transaction_datetime") = DATE_TRUNC('${durationType}', '${onDate}'::DATE)`,
+        ),
+      ];
+    }
+
+    if (fromDate && toDate) {
+      const fromDateObj = utils.getDayJsObj(new Date(fromDate));
+      if (!fromDateObj) {
+        throw new Error('invalid from_date');
+      }
+
+      const toDateObj = utils.getDayJsObj(new Date(toDate));
+      if (!toDateObj) {
+        throw new Error('invalid to_date');
+      }
+
+      whereObject[Op.and] = [
+        literal(
+          `DATE_TRUNC('${durationType}', "transaction_datetime") BETWEEN DATE_TRUNC('${durationType}', '${fromDate}'::DATE) AND DATE_TRUNC('${durationType}', '${toDate}'::DATE)`,
         ),
       ];
     }

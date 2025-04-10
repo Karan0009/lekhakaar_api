@@ -13,9 +13,7 @@ apiRouter.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const errors = err.errors || [];
   return res.status(statusCode).json({
-    message,
-    status_code: statusCode,
-    success: false,
+    meta: { message, status_code: statusCode, success: false },
     errors,
   });
 });
