@@ -74,7 +74,7 @@ class TransactionController {
         order_by: orderBy,
         sort_by: sortBy,
         from_date: fromDate,
-        to_date: to_date,
+        to_date: toDate,
         sub_cat_id: subCatId,
       };
 
