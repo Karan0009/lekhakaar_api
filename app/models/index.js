@@ -73,9 +73,11 @@ models.UncategorizedTransaction.belongsTo(models.UserTransaction, {
 models.UserTransaction.belongsTo(models.SubCategory, {
   foreignKey: 'sub_cat_id',
   targetKey: 'id',
+  as: 'sub_category',
 });
 models.SubCategory.hasMany(models.UserTransaction, {
   foreignKey: 'sub_cat_id',
+  as: 'sub_category',
 });
 
 models.Category.hasMany(models.SubCategory, { foreignKey: 'category_id' });

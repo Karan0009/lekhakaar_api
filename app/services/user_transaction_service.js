@@ -146,13 +146,14 @@ export default class UserTransactionService {
     const groupBy = [
       '"UserTransaction"."user_id"',
       'UserTransaction.sub_cat_id',
-      'SubCategory.id',
+      'sub_category.id',
       DATE_SUMMARY_START_LABEL,
     ];
     const includes = [];
     includes.push({
       model: SubCategory,
       required: true,
+      as: 'sub_category',
       attributes: ['id', 'name', 'icon', 'description'],
     });
 
@@ -228,6 +229,7 @@ export default class UserTransactionService {
       {
         model: SubCategory,
         attributes: ['id', 'name', 'description', 'icon'],
+        as: 'sub_category',
       },
     ];
 

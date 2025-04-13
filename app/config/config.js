@@ -100,6 +100,7 @@ const defaultConfig = {
     quarterly: 'quarter_start',
     yearly: 'year_start',
   },
+  DEFAULT_GET_REQUEST_LIMIT: 10,
 };
 
 const config = { ...defaultConfig };
