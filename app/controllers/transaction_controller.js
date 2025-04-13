@@ -73,7 +73,8 @@ class TransactionController {
       meta.filters = {
         order_by: orderBy,
         sort_by: sortBy,
-        on_date: onDate,
+        from_date: fromDate,
+        to_date: to_date,
         sub_cat_id: subCatId,
       };
 
