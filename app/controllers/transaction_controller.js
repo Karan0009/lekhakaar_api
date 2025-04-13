@@ -4,6 +4,7 @@ import { UserTransactionSerializer } from '../serializers/user_transaction_seria
 import UserTransactionService from '../services/user_transaction_service.js';
 import createHttpError from 'http-errors';
 import utils from '../lib/utils.js';
+import { HttpStatusCode } from 'axios';
 
 class TransactionController {
   constructor() {
