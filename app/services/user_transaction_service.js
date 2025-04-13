@@ -174,36 +174,40 @@ export default class UserTransactionService {
   }
 
   /**
-   * upsert yearly summary
-   * @param {string} userId
-   * @param {string} fromDate
-   * @param {string} toDate
-   * @param {string} subCategoryId
-   * @param {{limit:number,offset:number,orderBy:string,sortBy:string}} options
-   * @param {*} sqlTransaction
-   * @returns {Promise<any>}
+   *
+   * @param {{
+   * userId: string,
+   * fromDate: string,
+   * toDate: string,
+   * subCategoryId: string|number,
+   * options, options: { orderBy: string, sortBy: string },
+   * sqlTransaction: any
+   * }} data
+   * @returns {Promise<{rows: UserTransaction[],count: number,}>} user_transactions count and list
    */
-  async countAndGetTransactionsList(
+  async countAndGetTransactionsList({
     userId,
     fromDate,
     toDate,
     subCategoryId,
     options,
     sqlTransaction = null,
-  ) {
-    const fromDateObj = utils.getDayJsObj(new Date(fromDate));
-    const toDateObj = utils.getDayJsObj(new Date(toDate));
-    if (!fromDateObj || !toDateObj) {
-      throw new Error('invalid date');
-    }
-
+  }) {
     const whereObject = {
       user_id: userId,
     };
-    whereObject[Op.and] = [
-      literal(`DATE("transaction_datetime") >= DATE('${fromDate}')`),
-      literal(`DATE("transaction_datetime") <= DATE('${toDate}')`),
-    ];
+
+    if (fromDate && toDate) {
+      const fromDateObj = utils.getDayJsObj(new Date(fromDate));
+      const toDateObj = utils.getDayJsObj(new Date(toDate));
+      if (!fromDateObj || !toDateObj) {
+        throw new Error('invalid date');
+      }
+      whereObject[Op.and] = [
+        literal(`DATE("transaction_datetime") >= DATE('${fromDate}')`),
+        literal(`DATE("transaction_datetime") <= DATE('${toDate}')`),
+      ];
+    }
 
     let sortBy;
     if (options.sortBy === 'amount') {
@@ -222,7 +226,7 @@ export default class UserTransactionService {
     const includes = [
       {
         model: SubCategory,
-        attributes: ['id', 'name', 'description'],
+        attributes: ['id', 'name', 'description', 'icon'],
       },
     ];
 

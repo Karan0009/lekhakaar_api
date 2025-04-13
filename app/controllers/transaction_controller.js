@@ -34,7 +34,8 @@ class TransactionController {
       const {
         order_by: orderBy,
         sort_by: sortBy,
-        on_date: onDate,
+        from_date: fromDate,
+        to_date: toDate,
         sub_cat_id: subCatId,
         limit,
         offset,
@@ -42,18 +43,18 @@ class TransactionController {
       } = req.query;
 
       const { count, rows } =
-        await this._userTransactionService.countAndGetTransactionsList(
-          user.id,
-          onDate,
-          onDate,
-          subCatId,
-          {
+        await this._userTransactionService.countAndGetTransactionsList({
+          userId: user.id,
+          fromDate: fromDate,
+          toDate: toDate,
+          subCategoryId: subCatId,
+          options: {
             limit,
             offset,
             orderBy,
             sortBy,
           },
-        );
+        });
 
       // const serializedData = UserTransactionSerializer.serialize(
       //   rows.map((item) => item.toJSON()),

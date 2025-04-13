@@ -12,11 +12,25 @@ const userTransactionsRouter = express.Router();
 userTransactionsRouter.get(
   '/',
   query('sub_cat_id').isNumeric().optional(),
-  query('on_date')
+  query('from_date')
     .matches(/^\d{4}-\d{2}-\d{2}$/)
-    .exists()
-    .notEmpty()
+    .optional()
     .escape(),
+  query('to_date')
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .optional()
+    .escape(),
+  query().custom((value) => {
+    // to check either from_date and to_date are defiend or they are both undefined
+    const hasFrom = value.from_date !== undefined;
+    const hasTo = value.to_date !== undefined;
+
+    if (hasFrom !== hasTo) {
+      throw new Error('Both from_date and to_date must be provided together');
+    }
+
+    return true;
+  }),
   ...sortOrderValidator(
     ['amount', 'transaction_datetime'],
     'transaction_datetime',
