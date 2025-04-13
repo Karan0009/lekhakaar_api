@@ -10,7 +10,7 @@ import OpenaiBatch, {
 import openaiClient from '../../lib/openai/openai.js';
 import sequelize from '../../lib/sequelize.js';
 import utils from '../../lib/utils.js';
-import uncategorizedTransactionService from '../../services/uncategorized_transaction_service.js';
+import UncategorizedTransactionService from '../../services/uncategorized_transaction_service.js';
 import UserTransactionService from '../../services/user_transaction_service.js';
 
 export default class RawTransactionsBatchesJob extends BaseJob {
@@ -19,7 +19,7 @@ export default class RawTransactionsBatchesJob extends BaseJob {
       queueName: config.BULL_MQ_QUEUES.rawTransactionsBatchesQueue,
       jobOptions: {
         repeat: {
-          pattern: '*/5 * * * *',
+          pattern: '*/2 * * * *',
         },
       },
     });
@@ -47,8 +47,9 @@ export default class RawTransactionsBatchesJob extends BaseJob {
       );
       if (sqlTransaction) {
         await sqlTransaction.rollback();
+        this.logger.error('transaction rolled back');
       }
-      this.logger.error('error in process', { error });
+      this.logger.error('error in process', error);
       throw error;
     }
   }
@@ -97,7 +98,7 @@ export default class RawTransactionsBatchesJob extends BaseJob {
 
       return processedBatches;
     } catch (error) {
-      this.logger.error('error in getProcessedBatches', { error });
+      this.logger.error('error in getProcessedBatches', error);
       throw error;
     }
   }
@@ -166,9 +167,7 @@ export default class RawTransactionsBatchesJob extends BaseJob {
 
       return resultObjects;
     } catch (error) {
-      this.logger.error('error in openaiFileToJsonObjects', {
-        error,
-      });
+      this.logger.error('error in openaiFileToJsonObjects', error);
 
       return null;
     }
@@ -207,7 +206,7 @@ export default class RawTransactionsBatchesJob extends BaseJob {
               completion_window: '24h',
             });
           } catch (error) {
-            this.logger.error('error in creating batch job', { error });
+            this.logger.error('error in creating batch job', error);
           }
         }
 
@@ -223,7 +222,7 @@ export default class RawTransactionsBatchesJob extends BaseJob {
           );
         }
       } catch (error) {
-        this.logger.error('error in handleInvalidJobBatches', { error });
+        this.logger.error('error in handleInvalidJobBatches', error);
         continue;
       }
     }
@@ -273,7 +272,7 @@ export default class RawTransactionsBatchesJob extends BaseJob {
           },
         );
       } catch (error) {
-        this.logger.error('error in handleRetryFailedBatches', { error });
+        this.logger.error('error in handleRetryFailedBatches', error);
         continue;
       }
     }
@@ -365,6 +364,8 @@ export default class RawTransactionsBatchesJob extends BaseJob {
 
       // TODO: AFTER AUTO CATEGORIZATION IS DONE CHANGE THIS CODE
 
+      const uncategorizedTransactionService =
+        new UncategorizedTransactionService();
       await uncategorizedTransactionService.create(
         newUserTransaction.id,
         rawTrxn.user_id,
