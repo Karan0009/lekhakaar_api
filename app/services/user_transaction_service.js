@@ -219,6 +219,8 @@ export default class UserTransactionService {
     const attributes = [
       'user_id',
       'amount',
+      'recipient_name',
+      'meta',
       'sub_cat_id',
       'transaction_datetime',
     ];
