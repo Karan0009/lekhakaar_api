@@ -55,18 +55,28 @@ class TransactionController {
           },
         );
 
-      const serializedData = UserTransactionSerializer.serialize(
-        rows.map((item) => item.toJSON()),
-      );
+      // const serializedData = UserTransactionSerializer.serialize(
+      //   rows.map((item) => item.toJSON()),
+      // );
 
-      serializedData.meta = utils.metaData(count, limit, page);
-      serializedData.filters = {
+      // serializedData.meta = utils.metaData(count, limit, page);
+      // serializedData.filters = {
+      //   order_by: orderBy,
+      //   sort_by: sortBy,
+      //   on_date: onDate,
+      // };
+
+      const jsonData = rows.map((item) => item.toJSON());
+
+      const meta = utils.metaData(count, limit, page);
+      meta.filters = {
         order_by: orderBy,
         sort_by: sortBy,
         on_date: onDate,
+        sub_cat_id: subCatId,
       };
 
-      return res.json(serializedData);
+      return res.json({ data: jsonData, meta: meta });
     } catch (error) {
       this._logger.error('error in TransactionController index', { error });
       next(error);
