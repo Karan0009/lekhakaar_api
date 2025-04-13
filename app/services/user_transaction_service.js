@@ -36,14 +36,18 @@ export default class UserTransactionService {
       throw new Error('invalid data');
     }
 
+    const modifiedMeta = { ...data.meta };
+    modifiedMeta.amount = utils.formatAmount(modifiedMeta.amount);
+    modifiedMeta.recipient_name = modifiedMeta.recipient_name.toLowerCase();
+
     const newUserTransaction = await UserTransaction.create(
       {
-        user_id: data.user_id,
-        sub_cat_id: data.sub_cat_id || null,
-        amount: utils.formatAmount(data.amount),
-        transaction_datetime: data.transaction_datetime,
-        recipient_name: data.recipient_name,
-        meta: data.meta,
+        user_id: modifiedMeta.user_id,
+        sub_cat_id: modifiedMeta.sub_cat_id || null,
+        amount: modifiedMeta.amount,
+        transaction_datetime: modifiedMeta.transaction_datetime,
+        recipient_name: modifiedMeta.recipient_name,
+        meta: modifiedMeta,
         status: USER_TRANSACTION_STATUSES.EXTRACTED,
       },
       {
