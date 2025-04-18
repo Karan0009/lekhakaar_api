@@ -40,13 +40,11 @@ export default class RawTransactionsImgToTextJob extends BaseJob {
 
       // TODO: OPTIMIZE THIS PROCESSING
       const failedRawTransactions = [];
+      const failedRawTransactionsWithImages = [];
       for (let i = 0; i < pendingRawTransactionsWithImage.length; i++) {
         const rawTrxn = pendingRawTransactionsWithImage[i];
-        const imagePath = join(
-          __dirname,
-          '../../../',
-          rawTrxn.raw_transaction_data,
-        );
+        const imageName = rawTrxn.raw_transaction_data.split('/')[1];
+        const imagePath = join(config.MEDIA_UPLOAD_PATH, 'uploads', imageName);
         let imageText = '';
 
         try {
@@ -55,7 +53,7 @@ export default class RawTransactionsImgToTextJob extends BaseJob {
           );
         } catch (error) {
           this.logger.error('error in processImageFromPath', { error });
-          failedRawTransactions.push(rawTrxn);
+          failedRawTransactionsWithImages.push(rawTrxn);
 
           continue;
         }
@@ -69,6 +67,10 @@ export default class RawTransactionsImgToTextJob extends BaseJob {
       await this.setRawTransactionsStatus(
         failedRawTransactions,
         RAW_TRANSACTION_STATUSES.PENDING,
+      );
+      await this.setRawTransactionsStatus(
+        failedRawTransactionsWithImages,
+        RAW_TRANSACTION_STATUSES.PENDING_TEXT_EXTRACTION,
       );
 
       // await sqlTransaction.commit();
