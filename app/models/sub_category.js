@@ -54,6 +54,13 @@ SubCategory.init(
     sequelize,
     modelName: 'SubCategory',
     tableName: 'sub_categories',
+    scopes: {
+      active: {
+        where: {
+          status: SUB_CATEGORY_STATUSES.active,
+        },
+      },
+    },
   },
 );
 

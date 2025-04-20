@@ -3,6 +3,7 @@ import uncategorizedTransactionController from '../controllers/uncategorized_tra
 
 const uncategorizedTransactionRouter = express.Router();
 
+// TODO: NOT BEING USED
 uncategorizedTransactionRouter.get(
   '/',
   uncategorizedTransactionController.getUncategorizedTransactions,

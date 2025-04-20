@@ -34,6 +34,8 @@ const setUser = async (req, res, next) => {
     const token = authHeader.split(' ')[1];
     const decoded = await jwt.verifyToken(token);
 
+    //TODO: FIX TOKEN IS NOT EXPIRING
+
     if (!decoded || !decoded.user_id) {
       return next(
         createHttpError(
