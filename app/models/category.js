@@ -23,6 +23,10 @@ Category.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    icon: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     status: {
       type: DataTypes.ENUM(...Object.values(CATEGORY_STATUSES)),
       allowNull: false,
@@ -32,6 +36,13 @@ Category.init(
     sequelize,
     modelName: 'Category',
     tableName: 'categories',
+    scopes: {
+      active: {
+        where: {
+          status: CATEGORY_STATUSES.active,
+        },
+      },
+    },
   },
 );
 
