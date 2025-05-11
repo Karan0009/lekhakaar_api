@@ -1,5 +1,5 @@
 import express from 'express';
-import { oneOf, query } from 'express-validator';
+import { oneOf, query, body } from 'express-validator';
 import config from '../config/config.js';
 import transactionSummaryController from '../controllers/transaction_summary_controller.js';
 import sortOrderValidator from '../middlewares/sort_order_validator.js';
@@ -38,6 +38,34 @@ userTransactionsRouter.get(
   ),
   transactionController.index,
 );
+
+userTransactionsRouter.post(
+  '/',
+  body('sub_cat_id').isNumeric().optional(),
+  body('amount').isInt({
+    allow_leading_zeroes: false,
+    gt: 0,
+  }),
+  body('transaction_datetime').isISO8601({ strict: true }).optional(),
+  body('recipient_name').isString().optional().escape(),
+  transactionController.create,
+);
+
+userTransactionsRouter.put(
+  '/:id',
+  body('sub_cat_id').isNumeric().optional(),
+  body('amount')
+    .isInt({
+      allow_leading_zeroes: false,
+      gt: 0,
+    })
+    .optional(),
+  body('transaction_datetime').isISO8601({ strict: true }).optional(),
+  body('recipient_name').isString().optional().escape(),
+  transactionController.update,
+);
+
+userTransactionsRouter.delete('/:id', transactionController.delete);
 
 userTransactionsRouter.get(
   '/summary',

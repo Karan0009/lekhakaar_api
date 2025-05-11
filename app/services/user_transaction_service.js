@@ -3,10 +3,13 @@ import { LoggerFactory } from '../lib/logger.js';
 import utils from '../lib/utils.js';
 import models from '../models/index.js';
 import UserTransaction, {
+  CREATION_SOURCE,
   USER_TRANSACTION_STATUSES,
 } from '../models/user_transaction.js';
 import config from '../config/config.js';
 import SubCategory from '../models/sub_category.js';
+import createHttpError from 'http-errors';
+import { HttpStatusCode } from 'axios';
 
 export default class UserTransactionService {
   constructor() {
@@ -14,36 +17,93 @@ export default class UserTransactionService {
   }
 
   /**
-   * upsert yearly summary
-   * @param {string} userId
-   * @param {*} subCategoryId
-   * @param {Date} createdAtOfTransaction
-   * @param {'weekly' | 'monthly' | 'quarterly' | 'yearly'} summaryType
+   * create user transaction
+   * @param {*} data
    * @param {*} sqlTransaction
-   * @returns {Promise<MonthlySummarizedUserTransaction>}
+   * @returns {Promise<UserTransaction>}
    */
   async createUserTransaction(data, sqlTransaction = null) {
     this._logger.info('inserting user transaction');
 
+    let {
+      user_id,
+      amount,
+      isIntAmount,
+      transaction_datetime,
+      recipient_name,
+      creation_source,
+      sub_cat_id,
+      meta,
+    } = data;
+
+    if (!transaction_datetime) {
+      transaction_datetime = utils.getDayJsObj(new Date()).toISOString();
+    } else {
+      transaction_datetime = utils
+        .getDayJsObj(transaction_datetime)
+        .toISOString();
+    }
+
+    if (!sub_cat_id) {
+      const uncategorizedSubCategory = await SubCategory.findOne({
+        attributes: ['id'],
+        where: {
+          name: config.UNCATEGORIZED_SUB_CAT_NAME,
+          user_id: { [Op.is]: null },
+        },
+        transaction: sqlTransaction,
+      });
+
+      if (!uncategorizedSubCategory) {
+        throw new createHttpError(HttpStatusCode.InternalServerError, {
+          errors: 'cannot create uncategorized transaction',
+        });
+      }
+      sub_cat_id = uncategorizedSubCategory.id;
+    } else {
+      const subCat = await SubCategory.findOne({
+        attributes: ['id'],
+        where: {
+          id: sub_cat_id,
+          [Op.or]: [{ user_id }, { user_id: { [Op.is]: null } }],
+        },
+        transaction: sqlTransaction,
+      });
+
+      if (!subCat) {
+        throw new createHttpError(HttpStatusCode.InternalServerError, {
+          errors: 'cannot find sub_category',
+        });
+      }
+      sub_cat_id = subCat.id;
+    }
+
+    if (!recipient_name) {
+      recipient_name = 'the anti-savings fund';
+    }
+
     if (
-      !data.user_id ||
-      !data.amount ||
-      !data.transaction_datetime ||
-      !data.recipient_name ||
-      !data.meta
+      !user_id ||
+      !amount ||
+      !creation_source ||
+      !Object.values(CREATION_SOURCE).includes(creation_source) ||
+      !meta
     ) {
-      this._logger.error('invalid data to create user transaction', { data });
-      throw new Error('invalid data');
+      this._logger.error('invalid data to create user transaction', data);
+      throw new createHttpError(HttpStatusCode.BadRequest, {
+        errors: 'invalid data',
+      });
     }
 
     const newUserTransaction = await UserTransaction.create(
       {
-        user_id: data.user_id,
-        sub_cat_id: data.sub_cat_id || null,
-        amount: utils.formatAmount(data.amount),
-        transaction_datetime: data.transaction_datetime,
-        recipient_name: data.recipient_name.toLowerCase(),
-        meta: data.meta,
+        user_id: user_id,
+        sub_cat_id: sub_cat_id,
+        amount: utils.formatAmount(amount, isIntAmount),
+        transaction_datetime: transaction_datetime,
+        recipient_name: recipient_name.toLowerCase(),
+        creation_source: creation_source,
+        meta: meta,
         status: USER_TRANSACTION_STATUSES.EXTRACTED,
       },
       {
@@ -52,6 +112,99 @@ export default class UserTransactionService {
     );
 
     return newUserTransaction;
+  }
+
+  /**
+   * update user transaction
+   * @param {*} id
+   * @param {*} data
+   * @param {*} sqlTransaction
+   * @returns {Promise<UserTransaction>}
+   */
+  async update(id, data, sqlTransaction = null) {
+    this._logger.info('updating user transaction');
+
+    const userTransaction = await UserTransaction.findByPk(id, {
+      attributes: [
+        'id',
+        'amount',
+        'recipient_name',
+        'transaction_datetime',
+        'sub_cat_id',
+        'user_id',
+      ],
+    });
+
+    if (!userTransaction) {
+      throw new createHttpError(HttpStatusCode.BadRequest, {
+        errors: 'transaction not found',
+      });
+    }
+
+    let {
+      user_id,
+      amount,
+      isIntAmount,
+      transaction_datetime,
+      recipient_name,
+      sub_cat_id,
+    } = data;
+
+    if (userTransaction.user_id !== user_id) {
+      throw new createHttpError(HttpStatusCode.Unauthorized, {
+        errors: 'unauthorized to update transaction',
+      });
+    }
+
+    if (transaction_datetime) {
+      transaction_datetime = utils
+        .getDayJsObj(transaction_datetime)
+        .toISOString();
+    }
+
+    if (sub_cat_id) {
+      const subCat = await SubCategory.findOne({
+        attributes: ['id'],
+        where: {
+          id: sub_cat_id,
+          [Op.or]: [{ user_id }, { user_id: { [Op.is]: null } }],
+        },
+        transaction: sqlTransaction,
+      });
+
+      if (!subCat) {
+        throw new createHttpError(HttpStatusCode.InternalServerError, {
+          errors: 'cannot find sub_category',
+        });
+      }
+      sub_cat_id = subCat.id;
+    }
+
+    const updatedData = {};
+
+    if (sub_cat_id) {
+      updatedData.sub_cat_id = sub_cat_id;
+    }
+
+    if (amount) {
+      updatedData.amount = utils.formatAmount(amount, isIntAmount);
+    }
+
+    if (transaction_datetime) {
+      updatedData.transaction_datetime = transaction_datetime;
+    }
+
+    if (recipient_name) {
+      updatedData.recipient_name = recipient_name.toLowerCase();
+    }
+
+    if (Object.keys(updatedData).length > 0) {
+      await userTransaction.update(updatedData, {
+        transaction: sqlTransaction,
+      });
+    }
+
+    return userTransaction;
   }
 
   /**
@@ -354,5 +507,26 @@ export default class UserTransactionService {
     } else {
       throw new Error('invalid summaryType');
     }
+  }
+
+  async delete(id, userId, sqlTransaction = null) {
+    const userTrxn = await UserTransaction.findByPk(id);
+
+    if (!userTrxn) {
+      throw new createHttpError(HttpStatusCode.BadRequest, {
+        errors: 'transaction not found',
+      });
+    }
+
+    if (userTrxn.user_id !== userId) {
+      throw new createHttpError(HttpStatusCode.Unauthorized, {
+        errors: 'this is not your transaction',
+      });
+    }
+    // todo: set status to deleted when destroying?
+    return UserTransaction.destroy({
+      where: { id: id, user_id: userId },
+      transaction: sqlTransaction,
+    });
   }
 }

@@ -101,6 +101,8 @@ const defaultConfig = {
     yearly: 'year_start',
   },
   DEFAULT_GET_REQUEST_LIMIT: 10,
+
+  UNCATEGORIZED_SUB_CAT_NAME: 'uncategorized',
 };
 
 const config = { ...defaultConfig };

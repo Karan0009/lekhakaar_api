@@ -9,7 +9,7 @@
     "start": "node ./bin/run.js",
     "start_api": "node ./bin/run.js",
     "start_mq": "node ./bin/run_mq.js",
-    "dev_api": "npx nodemon --inspect=0.0.0.0:9229 ./bin/run.js",
+    "dev_api": "npx nodemon --legacy-watch --inspect=0.0.0.0:9229 ./bin/run.js",
     "dev_mq": "npx nodemon --inspect=0.0.0.0:9230 ./bin/run_mq.js"
   },
   "keywords": [],

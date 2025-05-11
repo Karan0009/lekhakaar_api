@@ -1,10 +1,10 @@
 import { validationResult } from 'express-validator';
 import { LoggerFactory } from '../lib/logger.js';
-import { UserTransactionSerializer } from '../serializers/user_transaction_serializer.js';
 import UserTransactionService from '../services/user_transaction_service.js';
 import createHttpError from 'http-errors';
 import utils from '../lib/utils.js';
 import { HttpStatusCode } from 'axios';
+import { CREATION_SOURCE } from '../models/user_transaction.js';
 
 class TransactionController {
   constructor() {
@@ -82,6 +82,140 @@ class TransactionController {
       return res.json({ data: jsonData, meta: meta });
     } catch (error) {
       this._logger.error('error in TransactionController index', { error });
+      next(error);
+    }
+  };
+
+  /**
+   *
+   * @param {import('express').Request} req
+   * @param {import('express').Response} res
+   * @param {import('express').NextFunction} next
+   */
+  create = async (req, res, next) => {
+    try {
+      const isBodyValid = validationResult(req);
+      if (!isBodyValid.isEmpty()) {
+        throw createHttpError(HttpStatusCode.BadRequest, {
+          errors: isBodyValid.array(),
+        });
+      }
+      const user = req.user;
+      // TODO: ALSO NEED TO ADD SUBSCRIPTION MIDDLEWARE TO ADD SUBSCRIPTION INFO IN THE REQUEST
+      // TODO: SUBSCRIPTION SERVICE/CONTROLLER/ROUTES/MODELS
+
+      const { sub_cat_id, amount, transaction_datetime, recipient_name } =
+        req.body;
+
+      const dbMeta = {
+        sub_cat_id,
+        amount,
+        transaction_datetime,
+        recipient_name,
+      };
+
+      const newUserTransaction =
+        await this._userTransactionService.createUserTransaction({
+          user_id: user.id,
+          amount,
+          isIntAmount: true,
+          sub_cat_id,
+          transaction_datetime,
+          creation_source: CREATION_SOURCE.app,
+          recipient_name,
+          meta: dbMeta,
+        });
+
+      const jsonData = newUserTransaction.toJSON();
+
+      const meta = utils.meta(req, 1);
+      meta.filters = {
+        sub_cat_id,
+        amount,
+        transaction_datetime,
+        recipient_name,
+      };
+
+      return res
+        .status(HttpStatusCode.Created)
+        .json({ data: jsonData, meta: meta });
+    } catch (error) {
+      this._logger.error('error in TransactionController create', error);
+      next(error);
+    }
+  };
+
+  /**
+   * @param {import('express').Request} req
+   * @param {import('express').Response} res
+   * @param {import('express').NextFunction} next
+   */
+  update = async (req, res, next) => {
+    try {
+      const isBodyValid = validationResult(req);
+      if (!isBodyValid.isEmpty()) {
+        throw createHttpError(HttpStatusCode.BadRequest, {
+          errors: isBodyValid.array(),
+        });
+      }
+      const user = req.user;
+      // TODO: ALSO NEED TO ADD SUBSCRIPTION MIDDLEWARE TO ADD SUBSCRIPTION INFO IN THE REQUEST
+      // TODO: SUBSCRIPTION SERVICE/CONTROLLER/ROUTES/MODELS
+
+      const { id } = req.params;
+
+      const { sub_cat_id, amount, transaction_datetime, recipient_name } =
+        req.body;
+
+      const userTransaction = await this._userTransactionService.update(id, {
+        user_id: user.id,
+        amount,
+        isIntAmount: true,
+        sub_cat_id,
+        transaction_datetime,
+        recipient_name,
+      });
+
+      const jsonData = userTransaction.toJSON();
+
+      const meta = utils.meta(req, 1);
+      meta.filters = {
+        sub_cat_id,
+        amount,
+        transaction_datetime,
+        recipient_name,
+      };
+
+      return res.status(HttpStatusCode.Ok).json({ data: jsonData, meta: meta });
+    } catch (error) {
+      this._logger.error('error in TransactionController create', error);
+      next(error);
+    }
+  };
+
+  /**
+   * @param {import('express').Request} req
+   * @param {import('express').Response} res
+   * @param {import('express').NextFunction} next
+   */
+  delete = async (req, res, next) => {
+    try {
+      const isBodyValid = validationResult(req);
+      if (!isBodyValid.isEmpty()) {
+        throw createHttpError(HttpStatusCode.BadRequest, {
+          errors: isBodyValid.array(),
+        });
+      }
+      const user = req.user;
+      const { id } = req.params;
+
+      const isDeleted = await this._userTransactionService.delete(id, user.id);
+
+      const meta = utils.meta(req, 1);
+
+      return res.json({ data: { deleted_count: isDeleted }, meta: meta });
+    } catch (error) {
+      this._logger.error('error in TransactionController delete', error);
       next(error);
     }
   };

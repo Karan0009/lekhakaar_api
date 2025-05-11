@@ -103,6 +103,7 @@ class Utils {
       total_pages: totalPages,
       last_page: totalPages,
       next_page_number: nextPageNumber,
+      filters: {},
     };
   }
   metaData(count, pageSize, pageNumber) {
@@ -157,8 +158,12 @@ class Utils {
     return dayjsObj.startOf('year').format('YYYY-MM-DD');
   }
 
-  formatAmount(decimalAmount) {
-    return parseInt(decimalAmount * 100);
+  formatAmount(amount, isIntAmount = false) {
+    if (isIntAmount) {
+      return parseInt(amount);
+    }
+
+    return parseInt(amount * 100);
   }
 }
 
