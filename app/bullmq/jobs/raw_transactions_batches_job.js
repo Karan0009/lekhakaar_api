@@ -2,6 +2,7 @@ import config from '../../config/config.js';
 import BaseJob from '../base/base_job.js';
 import RawTransaction, {
   RAW_TRANSACTION_STATUSES,
+  RAW_TRANSACTION_TYPE,
 } from '../../models/raw_transaction.js';
 import OpenaiBatch, {
   OPENAI_BATCH_PURPOSES,
@@ -12,6 +13,7 @@ import sequelize from '../../lib/sequelize.js';
 import utils from '../../lib/utils.js';
 import UncategorizedTransactionService from '../../services/uncategorized_transaction_service.js';
 import UserTransactionService from '../../services/user_transaction_service.js';
+import { CREATION_SOURCE } from '../../models/user_transaction.js';
 
 export default class RawTransactionsBatchesJob extends BaseJob {
   constructor() {
@@ -355,8 +357,10 @@ export default class RawTransactionsBatchesJob extends BaseJob {
             user_id: rawTrxn.user_id,
             sub_cat_id: 1, // uncategorized transaction id
             amount: response.amount,
+            isIntAmount: false,
             transaction_datetime: response.datetime,
             recipient_name: response.recipient,
+            creation_source: this._getCreationSource(rawTrxn),
             meta: response,
           },
           transaction,
@@ -381,6 +385,20 @@ export default class RawTransactionsBatchesJob extends BaseJob {
           transaction,
         },
       );
+    }
+  }
+
+  _getCreationSource(rawTrxn) {
+    if (
+      [RAW_TRANSACTION_TYPE.WA_IMAGE, RAW_TRANSACTION_TYPE.WA_TEXT].includes(
+        rawTrxn.raw_transaction_type,
+      )
+    ) {
+      return CREATION_SOURCE.wa_service;
+    } else if (rawTrxn.raw_transaction_type === RAW_TRANSACTION_TYPE.SMS_READ) {
+      return CREATION_SOURCE.sms_read;
+    } else {
+      CREATION_SOURCE.app;
     }
   }
 }

@@ -14,6 +14,7 @@ const RAW_TRANSACTION_STATUSES = {
 const RAW_TRANSACTION_TYPE = {
   WA_IMAGE: 'WA_IMAGE',
   WA_TEXT: 'WA_TEXT',
+  SMS_READ: 'SMS_READ',
 };
 
 export default class RawTransaction extends Model {}

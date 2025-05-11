@@ -9,6 +9,7 @@ const USER_TRANSACTION_STATUSES = {
 const CREATION_SOURCE = {
   wa_service: 'wa_service',
   app: 'app',
+  sms_read: 'sms_read',
 };
 
 export default class UserTransaction extends Model {}
