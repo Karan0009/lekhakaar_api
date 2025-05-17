@@ -214,7 +214,7 @@ export default class UserTransactionService {
    *  summaryType: string,
    *  onDate: string,
    *  subCatId: string,
-   *  options: { orderBy: string, sortBy: string },
+   *  options: { orderBy: string, sortBy: string, groupBy: string },
    *  sqlTransaction: any }} data
    * @returns {Promise<any[]>}
    */
@@ -239,8 +239,15 @@ export default class UserTransactionService {
       throw new Error('Invalid sort by column');
     }
 
-    const { durationType } = this._getSummaryMeta(summaryType);
     const DATE_SUMMARY_START_LABEL = 'summary_start';
+    if (
+      options.groupBy &&
+      ![DATE_SUMMARY_START_LABEL, 'sub_cat_id'].includes(options.groupBy)
+    ) {
+      throw new Error('Invalid group by column');
+    }
+
+    const { durationType } = this._getSummaryMeta(summaryType);
 
     const whereObject = {
       user_id: userId,
@@ -293,22 +300,22 @@ export default class UserTransactionService {
         ),
         DATE_SUMMARY_START_LABEL,
       ],
-      'sub_cat_id',
     ];
 
-    const groupBy = [
-      '"UserTransaction"."user_id"',
-      'UserTransaction.sub_cat_id',
-      'sub_category.id',
-      DATE_SUMMARY_START_LABEL,
-    ];
+    const groupBy = ['"UserTransaction"."user_id"', DATE_SUMMARY_START_LABEL];
+
     const includes = [];
-    includes.push({
-      model: SubCategory,
-      required: true,
-      as: 'sub_category',
-      attributes: ['id', 'name', 'icon', 'description'],
-    });
+
+    if (options.groupBy === 'sub_cat_id') {
+      groupBy.push('UserTransaction.sub_cat_id', 'sub_category.id');
+      attributes.push('sub_cat_id');
+      includes.push({
+        model: SubCategory,
+        required: true,
+        as: 'sub_category',
+        attributes: ['id', 'name', 'icon', 'description'],
+      });
+    }
 
     if (subCatId != undefined && subCatId != null) {
       whereObject.sub_cat_id = subCatId;

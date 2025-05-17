@@ -71,6 +71,7 @@ userTransactionsRouter.get(
   '/summary',
   query('summary_type').isIn(Object.values(config.SUMMARY_TYPE)).escape(),
   query('sub_cat_id').isNumeric().optional(),
+  query('group_by').isString().optional(),
   oneOf(
     [
       query('on_date')

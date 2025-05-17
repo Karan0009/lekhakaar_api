@@ -38,6 +38,7 @@ class TransactionSummaryController {
       const {
         order_by: orderBy,
         sort_by: sortBy,
+        group_by: groupBy,
         summary_type: summaryType,
         on_date: onDate,
         from_date: fromDate,
@@ -57,6 +58,7 @@ class TransactionSummaryController {
             options: {
               orderBy,
               sortBy,
+              groupBy,
             },
             sqlTransaction: null,
           },
