@@ -10,6 +10,12 @@ import { HttpStatusCode } from 'axios';
 const userTransactionsRouter = express.Router();
 
 userTransactionsRouter.get(
+  '/:id',
+  param('id').isNumeric().notEmpty().escape(),
+  transactionController.show,
+);
+
+userTransactionsRouter.get(
   '/',
   query('sub_cat_id').isNumeric().optional(),
   query('from_date')
@@ -37,12 +43,6 @@ userTransactionsRouter.get(
     config.ORDER_BY.desc,
   ),
   transactionController.index,
-);
-
-userTransactionsRouter.get(
-  '/:id',
-  param('id').isNumeric().notEmpty().escape(),
-  transactionController.show,
 );
 
 userTransactionsRouter.post(
