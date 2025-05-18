@@ -92,6 +92,38 @@ class TransactionController {
    * @param {import('express').Response} res
    * @param {import('express').NextFunction} next
    */
+  show = async (req, res, next) => {
+    try {
+      const isBodyValid = validationResult(req);
+      if (!isBodyValid.isEmpty()) {
+        throw createHttpError(HttpStatusCode.BadRequest, {
+          errors: isBodyValid.array(),
+        });
+      }
+      const user = req.user;
+
+      const userTransaction = await this._userTransactionService.show({
+        userId: user.id,
+        id: req.params.id,
+      });
+
+      const jsonData = userTransaction?.toJSON() ?? null;
+
+      const meta = utils.meta(req, jsonData ? 1 : 0);
+
+      return res.json({ data: jsonData, meta: meta });
+    } catch (error) {
+      this._logger.error('error in TransactionController index', { error });
+      next(error);
+    }
+  };
+
+  /**
+   *
+   * @param {import('express').Request} req
+   * @param {import('express').Response} res
+   * @param {import('express').NextFunction} next
+   */
   create = async (req, res, next) => {
     try {
       const isBodyValid = validationResult(req);

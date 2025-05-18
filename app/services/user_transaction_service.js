@@ -412,6 +412,46 @@ export default class UserTransactionService {
   }
 
   /**
+   *
+   * @param {{
+   * userId: string,
+   * id: any,
+   * sqlTransaction: any
+   * }} data
+   * @returns {Promise<UserTransaction>} user_transactions show
+   */
+  async show({ userId, id, sqlTransaction = null }) {
+    const attributes = [
+      'user_id',
+      'amount',
+      'recipient_name',
+      'sub_cat_id',
+      'transaction_datetime',
+    ];
+
+    const includes = [
+      {
+        model: SubCategory,
+        attributes: ['id', 'name', 'description', 'icon'],
+        as: 'sub_category',
+      },
+    ];
+
+    const userTransaction = await models.UserTransaction.findOne({
+      attributes: attributes,
+      where: {
+        id: id,
+        user_id: userId,
+      },
+      include: includes,
+      useMaster: true,
+      transaction: sqlTransaction,
+    });
+
+    return userTransaction;
+  }
+
+  /**
    * upsert yearly summary
    * @param {string} userId
    * @param {string} fromDate

@@ -1,5 +1,5 @@
 import express from 'express';
-import { oneOf, query, body } from 'express-validator';
+import { oneOf, query, body, param } from 'express-validator';
 import config from '../config/config.js';
 import transactionSummaryController from '../controllers/transaction_summary_controller.js';
 import sortOrderValidator from '../middlewares/sort_order_validator.js';
@@ -37,6 +37,12 @@ userTransactionsRouter.get(
     config.ORDER_BY.desc,
   ),
   transactionController.index,
+);
+
+userTransactionsRouter.get(
+  '/:id',
+  param('id').isNumeric().notEmpty().escape(),
+  transactionController.show,
 );
 
 userTransactionsRouter.post(
