@@ -378,6 +378,7 @@ export default class UserTransactionService {
     }
 
     const attributes = [
+      'id',
       'user_id',
       'amount',
       'recipient_name',
@@ -422,6 +423,7 @@ export default class UserTransactionService {
    */
   async show({ userId, id, sqlTransaction = null }) {
     const attributes = [
+      'id',
       'user_id',
       'amount',
       'recipient_name',
