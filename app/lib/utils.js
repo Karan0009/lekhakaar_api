@@ -101,8 +101,9 @@ class Utils {
     return {
       total_count: count,
       total_pages: totalPages,
+      current_page: 1,
       last_page: totalPages,
-      next_page_number: nextPageNumber,
+      next_page: nextPageNumber,
       filters: {},
     };
   }
