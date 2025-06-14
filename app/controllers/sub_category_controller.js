@@ -1,7 +1,8 @@
-import { LoggerFactory } from '../lib/logger.js';
+import { HttpStatusCode } from 'axios';
 import { validationResult } from 'express-validator';
 import createHttpError from 'http-errors';
-import { HttpStatusCode } from 'axios';
+import { LoggerFactory } from '../lib/logger.js';
+import redis from '../lib/redis.js';
 import utils from '../lib/utils.js';
 import SubCategoryService from '../services/sub_category_service.js';
 
@@ -19,6 +20,16 @@ class SubCategoryController {
    */
   index = async (req, res, next) => {
     try {
+      const cacheKey = `sub_categories:${req.user.id}`;
+      const cachedData = await redis.get(cacheKey);
+      if (cachedData) {
+        this._logger.info('Cache hit for sub categories', { cacheKey });
+        const cachedResponse = JSON.parse(cachedData);
+
+        return res.status(HttpStatusCode.Ok).json(cachedResponse);
+      }
+
+      this._logger.info('Cache miss for sub categories', { cacheKey });
       const isBodyValid = validationResult(req);
       if (!isBodyValid.isEmpty()) {
         throw createHttpError(HttpStatusCode.BadRequest, {
@@ -56,9 +67,19 @@ class SubCategoryController {
         // sort_by: sortBy,
       };
 
-      return res
-        .status(HttpStatusCode.Ok)
-        .json({ data: subCategoriesList, meta });
+      const responseData = {
+        data: subCategoriesList,
+        meta,
+      };
+      // Cache the response for 24 hours
+      await redis.set(
+        cacheKey,
+        JSON.stringify(responseData),
+        'EX',
+        86400, // 24 hours in seconds
+      );
+
+      return res.status(HttpStatusCode.Ok).json(responseData);
     } catch (error) {
       this._logger.error('error in index', { error });
       next(error);
@@ -106,6 +127,10 @@ class SubCategoryController {
 
       const meta = utils.metaData(1, 1, 1);
       meta.filters = {};
+
+      // Invalidate the cache for sub categories
+      const cacheKey = `sub_categories:${user.id}`;
+      await redis.del(cacheKey);
 
       return res
         .status(HttpStatusCode.Created)
