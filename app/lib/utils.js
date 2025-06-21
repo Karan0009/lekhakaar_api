@@ -4,6 +4,7 @@ import utc from 'dayjs/plugin/utc.js';
 import timezone from 'dayjs/plugin/timezone.js';
 import crypto from 'crypto';
 import config from '../config/config.js';
+import redis from './redis.js';
 
 dayjs.locale('en', { weekStart: 1 });
 dayjs.extend(utc);
@@ -165,6 +166,17 @@ class Utils {
     }
 
     return parseInt(amount * 100);
+  }
+
+  async deleteAllKeysWithPrefix(prefix) {
+    const keys = await redis.keys(`${prefix}*`);
+    if (keys.length === 0) {
+      return 0;
+    }
+
+    await redis.del(...keys);
+
+    return keys.length;
   }
 }
 

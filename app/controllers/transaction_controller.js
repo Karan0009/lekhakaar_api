@@ -5,6 +5,9 @@ import createHttpError from 'http-errors';
 import utils from '../lib/utils.js';
 import { HttpStatusCode } from 'axios';
 import { CREATION_SOURCE } from '../models/user_transaction.js';
+import { createHash } from 'node:crypto';
+import redis from '../lib/redis.js';
+import config from '../config/config.js';
 
 class TransactionController {
   constructor() {
@@ -43,6 +46,17 @@ class TransactionController {
         page,
       } = req.query;
 
+      const hash = createHash('md5')
+        .update(JSON.stringify(req.query))
+        .digest('hex');
+
+      const cacheKey = `transactions:${user.id}:index:${hash}`;
+      const cachedData = await redis.get(cacheKey);
+
+      if (cachedData) {
+        return res.json(JSON.parse(cachedData));
+      }
+
       const { count, rows } =
         await this._userTransactionService.countAndGetTransactionsList({
           userId: user.id,
@@ -79,7 +93,16 @@ class TransactionController {
         sub_cat_id: subCatId,
       };
 
-      return res.json({ data: jsonData, meta: meta });
+      const responseData = { data: jsonData, meta: meta };
+
+      await redis.set(
+        cacheKey,
+        JSON.stringify(responseData),
+        'EX',
+        config.times.hours_24_in_s,
+      );
+
+      return res.json(responseData);
     } catch (error) {
       this._logger.error('error in TransactionController index', { error });
       next(error);
@@ -168,6 +191,9 @@ class TransactionController {
         recipient_name,
       };
 
+      const cacheKeyPrefix = `transactions:${user.id}:`;
+      await utils.deleteAllKeysWithPrefix(cacheKeyPrefix);
+
       return res
         .status(HttpStatusCode.Created)
         .json({ data: jsonData, meta: meta });
@@ -218,6 +244,9 @@ class TransactionController {
         recipient_name,
       };
 
+      const cacheKeyPrefix = `transactions:${user.id}:`;
+      await utils.deleteAllKeysWithPrefix(cacheKeyPrefix);
+
       return res.status(HttpStatusCode.Ok).json({ data: jsonData, meta: meta });
     } catch (error) {
       this._logger.error('error in TransactionController create', error);
@@ -244,6 +273,9 @@ class TransactionController {
       const isDeleted = await this._userTransactionService.delete(id, user.id);
 
       const meta = utils.meta(req, 1);
+
+      const cacheKeyPrefix = `transactions:${user.id}:`;
+      await utils.deleteAllKeysWithPrefix(cacheKeyPrefix);
 
       return res.json({ data: { deleted_count: isDeleted }, meta: meta });
     } catch (error) {

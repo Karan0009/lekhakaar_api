@@ -4,9 +4,10 @@ import { validationResult } from 'express-validator';
 import createHttpError from 'http-errors';
 import { HttpStatusCode } from 'axios';
 import UserTransactionService from '../services/user_transaction_service.js';
-
-import { SummarizedUserTransactionsSerializer } from '../serializers/summarized_user_transactions_serializer.js';
 import utils from '../lib/utils.js';
+import { createHash } from 'node:crypto';
+import redis from '../lib/redis.js';
+import config from '../config/config.js';
 
 class TransactionSummaryController {
   constructor() {
@@ -45,6 +46,17 @@ class TransactionSummaryController {
         to_date: toDate,
         sub_cat_id: subCatId,
       } = req.query;
+
+      const hash = createHash('md5')
+        .update(JSON.stringify(req.query))
+        .digest('hex');
+
+      const cacheKey = `transactions:${user.id}:summary:${hash}`;
+      const cachedData = await redis.get(cacheKey);
+
+      if (cachedData) {
+        return res.json(JSON.parse(cachedData));
+      }
 
       const summaries =
         await this._userTransactionService.getSummarizedUserTransactionsByUserId(
@@ -86,7 +98,16 @@ class TransactionSummaryController {
         sub_cat_id: subCatId,
       };
 
-      return res.json({ data: summariesList, meta });
+      const responseData = { data: summariesList, meta };
+
+      await redis.set(
+        cacheKey,
+        JSON.stringify(responseData),
+        'EX',
+        config.times.hours_24_in_s,
+      );
+
+      return res.json(responseData);
     } catch (error) {
       this._logger.error('error in getSummary', { error });
       next(error);
