@@ -24,6 +24,7 @@ class AuthController {
    */
   sendOtp = async (req, res, next) => {
     try {
+      const TESTING_PHONE_NUMBER = '1111111111';
       const isBodyValid = validationResult(req);
       if (!isBodyValid.isEmpty()) {
         return res.json({ errors: isBodyValid.array() });
@@ -48,10 +49,11 @@ class AuthController {
         });
       }
 
-      const { newOtp, otpCode } = await otpService.generateOtp(
-        6,
-        config.times.mins_15_in_s,
-      );
+      // TODO: BAD CODE for testing phone number at all places! ;(
+      const { newOtp, otpCode } =
+        phone_number === TESTING_PHONE_NUMBER
+          ? await otpService.generateDummyOtp(config.times.mins_15_in_s)
+          : await otpService.generateOtp(6, config.times.mins_15_in_s);
 
       await redis.setex(
         userOtpVerifyKey,
@@ -73,7 +75,10 @@ class AuthController {
         },
       };
 
-      if (config.APP_ENV !== 'development') {
+      if (
+        config.APP_ENV !== 'testing' ||
+        phone_number !== TESTING_PHONE_NUMBER
+      ) {
         const waClientGrpcSendOtpRes = await sendOtpMessage(requestPayload);
         if (!waClientGrpcSendOtpRes.success) {
           this._logger.error('failed to send otp', { waClientGrpcSendOtpRes });

@@ -9,6 +9,28 @@ class OtpService {
   constructor() {
     this._logger = new LoggerFactory('OtpService').logger;
   }
+
+  /**
+   * Generates a dummy OTP for a testing user.
+   * @param {number} otpLifeDurationInSec
+   * @returns {Promise<{newOtp:Otp,otpCode:string}>} - The created OTP record.
+   */
+  async generateDummyOtp(otpLifeDurationInSec) {
+    const otpCode = '111111';
+    const expiryTime = utils
+      .getDayJsObj()
+      .add(otpLifeDurationInSec, 'seconds')
+      .toISOString();
+    const hashedOtp = utils.getSecureHash(otpCode);
+
+    const newOtp = await Otp.create({
+      otp_code: hashedOtp,
+      expiry_at: expiryTime,
+      status: OTP_STATUSES.PENDING,
+    });
+    return { newOtp: newOtp, otpCode: otpCode };
+  }
+
   /**
    * Generates a new OTP for a user.
    * @param {number} otpLength
