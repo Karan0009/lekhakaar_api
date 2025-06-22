@@ -34,6 +34,7 @@
     "jsonapi-serializer": "^3.6.9",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^2.5.2",
+    "multer": "^2.0.1",
     "openai": "^4.75.0",
     "pg": "^8.13.0",
     "qrcode-terminal": "^0.12.0",

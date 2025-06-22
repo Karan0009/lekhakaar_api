@@ -5,6 +5,7 @@ import uncategorizedTransactionRouter from './uncategorized_transaction_router.j
 import userTransactionsRouter from './user_transaction_router.js';
 import subCategoryRouter from './sub_category_router.js';
 import categoryRouter from './category_router.js';
+import rawTransactionsRouter from './raw_transaction_router.js';
 
 const lekhakaarRouter = express.Router();
 
@@ -18,5 +19,6 @@ lekhakaarRouter.use(
 lekhakaarRouter.use('/v1/transaction', setUser, userTransactionsRouter);
 lekhakaarRouter.use('/v1/sub-category', setUser, subCategoryRouter);
 lekhakaarRouter.use('/v1/category', setUser, categoryRouter);
+lekhakaarRouter.use('/v1/raw-transaction', setUser, rawTransactionsRouter);
 
 export default lekhakaarRouter;

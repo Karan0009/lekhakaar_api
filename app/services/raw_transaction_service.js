@@ -43,4 +43,4 @@ class RawTransactionService {
   }
 }
 
-export default new RawTransactionService();
+export default RawTransactionService;
