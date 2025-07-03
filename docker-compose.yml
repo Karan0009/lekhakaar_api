@@ -63,8 +63,8 @@ services:
   redis:
     image: redis
     restart: always
-    ports:
-      - 6379:6379
+    # ports:
+    #   - 6379:6379
     networks:
       - lekhakaar_api_net
 
