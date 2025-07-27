@@ -1,6 +1,7 @@
 import express from 'express';
 import authController from '../controllers/auth_controller.js';
 import { body } from 'express-validator';
+import config from '../config/config.js';
 
 const authRouter = express.Router();
 
@@ -30,7 +31,7 @@ authRouter.post(
   body('logout_type')
     .optional()
     .isString()
-    .isIn(['all', 'all_others', 'slef'])
+    .isIn(Object.values(config.LOGOUT_TYPES))
     .withMessage(
       `Invalid logout_type. Allowed values: 'all', 'all_others', 'self'`,
     ),

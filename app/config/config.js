@@ -100,6 +100,11 @@ const defaultConfig = {
     quarterly: 'quarter_start',
     yearly: 'year_start',
   },
+  LOGOUT_TYPES: {
+    self: 'self',
+    all: 'all',
+    all_others: 'all_others',
+  },
   DEFAULT_GET_REQUEST_LIMIT: 10,
 
   UNCATEGORIZED_SUB_CAT_NAME: 'uncategorized',

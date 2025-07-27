@@ -255,12 +255,17 @@ class AuthController {
       ).map((t) => t.token);
 
       let tokensToBeRevoked = [];
-      if (!logout_type || logout_type === 'all_other') {
-        tokensToBeRevoked = allTokens.filter((t) => t !== refresh_token);
-      } else if (logout_type === 'all') {
-        tokensToBeRevoked = allTokens;
-      } else if (logout_type === 'self') {
-        tokensToBeRevoked = allTokens.filter((t) => t === refresh_token);
+      switch (logout_type) {
+        case config.LOGOUT_TYPES.self:
+          tokensToBeRevoked = allTokens.filter((t) => t === refresh_token);
+          break;
+        case config.LOGOUT_TYPES.all:
+          tokensToBeRevoked = allTokens;
+          break;
+        case config.LOGOUT_TYPES.all_others:
+        default:
+          tokensToBeRevoked = allTokens.filter((t) => t !== refresh_token);
+          break;
       }
 
       if (tokensToBeRevoked.length > 0) {
