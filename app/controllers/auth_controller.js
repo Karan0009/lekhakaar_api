@@ -253,19 +253,22 @@ class AuthController {
       const allTokens = (
         await refreshTokenService.getAllTokensForUser(refreshToken.user_id)
       ).map((t) => t.token);
+
       let tokensToBeRevoked = [];
       if (!logout_type || logout_type === 'all_other') {
         tokensToBeRevoked = allTokens.filter((t) => t !== refresh_token);
       } else if (logout_type === 'all') {
-        tokensToBeRevoked = [...allTokens];
+        tokensToBeRevoked = allTokens;
       } else if (logout_type === 'self') {
         tokensToBeRevoked = allTokens.filter((t) => t === refresh_token);
       }
 
-      await refreshTokenService.removeGivenTokensForUser(
-        refreshToken.user_id,
-        tokensToBeRevoked,
-      );
+      if (tokensToBeRevoked.length > 0) {
+        await refreshTokenService.removeGivenTokensForUser(
+          refreshToken.user_id,
+          tokensToBeRevoked,
+        );
+      }
 
       return res.status(HttpStatusCode.Ok).json({
         message: 'logged out successfully',
