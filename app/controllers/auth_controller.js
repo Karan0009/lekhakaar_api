@@ -3,7 +3,7 @@ import { LoggerFactory } from '../lib/logger.js';
 import redis from '../lib/redis.js';
 import config from '../config/config.js';
 import otpService from '../services/otp_service.js';
-import userService from '../services/user_service.js';
+import UserService from '../services/user_service.js';
 import utils from '../lib/utils.js';
 import { sendOtpMessage } from '../../grpc_client/wa_grpc_client.js';
 import { HttpStatusCode } from 'axios';
@@ -14,6 +14,7 @@ import createHttpError from 'http-errors';
 class AuthController {
   constructor() {
     this._logger = new LoggerFactory('AuthController').logger;
+    this._userService = new UserService();
   }
 
   /**
@@ -135,10 +136,10 @@ class AuthController {
 
       /** @type import('../models/user.js').default */
       let user;
-      user = await userService.getUserByPhoneNumber(phone_number);
+      user = await this._userService.getUserByPhoneNumber(phone_number);
 
       if (!user) {
-        user = await userService.createUser({
+        user = await this._userService.createUser({
           phone_number,
           country_code: '+91',
         });

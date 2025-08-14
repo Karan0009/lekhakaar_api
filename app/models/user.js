@@ -28,6 +28,18 @@ User.init(
       allowNull: false,
       defaultValue: USER_STATUSES.ACTIVE,
     },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    occupation: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    city: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   {
     sequelize,

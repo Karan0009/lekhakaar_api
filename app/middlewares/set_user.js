@@ -1,5 +1,5 @@
 import jwt from '../lib/jwt.js';
-import userService from '../services/user_service.js';
+import UserService from '../services/user_service.js';
 import { HttpStatusCode } from 'axios';
 import config from '../config/config.js';
 import createHttpError from 'http-errors';
@@ -17,6 +17,7 @@ const setUser = async (req, res, next) => {
       req.query.user_id
     ) {
       const user_id = req.query.user_id;
+      const userService = new UserService();
       req.user = await userService.getUserById(user_id);
       return next();
     }
