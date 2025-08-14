@@ -12,12 +12,13 @@ import createHttpError from 'http-errors';
  */
 const setUser = async (req, res, next) => {
   try {
+    const userService = new UserService();
+
     if (
       (config.APP_ENV === 'development' || config.APP_ENV === 'testing') &&
       req.query.user_id
     ) {
       const user_id = req.query.user_id;
-      const userService = new UserService();
       req.user = await userService.getUserById(user_id);
       return next();
     }
