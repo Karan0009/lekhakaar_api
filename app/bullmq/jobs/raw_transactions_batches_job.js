@@ -397,8 +397,8 @@ export default class RawTransactionsBatchesJob extends BaseJob {
       return CREATION_SOURCE.wa_service;
     } else if (rawTrxn.raw_transaction_type === RAW_TRANSACTION_TYPE.SMS_READ) {
       return CREATION_SOURCE.sms_read;
-    } else {
-      CREATION_SOURCE.app;
     }
+
+    return CREATION_SOURCE.app;
   }
 }

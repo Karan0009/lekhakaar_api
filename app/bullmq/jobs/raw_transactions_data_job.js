@@ -76,6 +76,7 @@ export default class RawTransactionsDataJob extends BaseJob {
         raw_transaction_type: [
           RAW_TRANSACTION_TYPE.WA_IMAGE,
           RAW_TRANSACTION_TYPE.WA_TEXT,
+          RAW_TRANSACTION_TYPE.SMS_READ,
         ],
         status: RAW_TRANSACTION_STATUSES.PENDING,
       },
@@ -214,7 +215,8 @@ export default class RawTransactionsDataJob extends BaseJob {
     if (rawTransaction.raw_transaction_type === RAW_TRANSACTION_TYPE.WA_IMAGE)
       return rawTransaction.extracted_text;
     else if (
-      rawTransaction.raw_transaction_type === RAW_TRANSACTION_TYPE.WA_TEXT
+      rawTransaction.raw_transaction_type === RAW_TRANSACTION_TYPE.WA_TEXT ||
+      rawTransaction.raw_transaction_type === RAW_TRANSACTION_TYPE.SMS_READ
     )
       return rawTransaction.raw_transaction_data;
 
