@@ -44,6 +44,10 @@ export default class RawTransactionsBatchesJob extends BaseJob {
 
       await sqlTransaction.commit();
     } catch (error) {
+      this.logger.error(
+        'error in processing raw transactions batches job',
+        error,
+      );
       await this.setOpenaiBatchStatus(
         pendingBatches.map((i) => i.id),
         OPENAI_BATCH_STATUS.PENDING,
@@ -372,6 +376,10 @@ export default class RawTransactionsBatchesJob extends BaseJob {
           },
         );
       } catch (error) {
+        this.logger.error(
+          `error in creating user transaction for rawTrxn ${rawTrxn.id}`,
+          error,
+        );
         await this._handleUserTrxnCreateError(rawTrxn, transaction);
         continue;
       }
