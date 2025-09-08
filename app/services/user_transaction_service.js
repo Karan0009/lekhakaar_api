@@ -45,6 +45,7 @@ export default class UserTransactionService {
     }
 
     if (!sub_cat_id) {
+      // TODO: ADD REDIS CACHING
       const uncategorizedSubCategory = await SubCategory.findOne({
         attributes: ['id'],
         where: {
@@ -61,6 +62,7 @@ export default class UserTransactionService {
       }
       sub_cat_id = uncategorizedSubCategory.id;
     } else {
+      // TODO: ADD REDIS CACHING
       const subCat = await SubCategory.findOne({
         attributes: ['id'],
         where: {
@@ -84,7 +86,8 @@ export default class UserTransactionService {
 
     if (
       !user_id ||
-      !amount ||
+      amount == null ||
+      amount == 0 ||
       !creation_source ||
       !Object.values(CREATION_SOURCE).includes(creation_source) ||
       !meta

@@ -1,6 +1,7 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../lib/sequelize.js';
 
+// TODO: DEPRECATED, REMOVE THIS MODEL
 export default class UncategorizedTransaction extends Model {}
 
 UncategorizedTransaction.init(

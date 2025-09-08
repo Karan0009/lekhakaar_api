@@ -11,7 +11,6 @@ import OpenaiBatch, {
 import openaiClient from '../../lib/openai/openai.js';
 import sequelize from '../../lib/sequelize.js';
 import utils from '../../lib/utils.js';
-import UncategorizedTransactionService from '../../services/uncategorized_transaction_service.js';
 import UserTransactionService from '../../services/user_transaction_service.js';
 import { CREATION_SOURCE } from '../../models/user_transaction.js';
 
@@ -20,6 +19,8 @@ export default class RawTransactionsBatchesJob extends BaseJob {
     super({
       queueName: config.BULL_MQ_QUEUES.rawTransactionsBatchesQueue,
       jobOptions: {
+        removeOnComplete: 2,
+        // process this job every 2 minutes
         repeat: {
           pattern: '*/2 * * * *',
         },
@@ -336,56 +337,57 @@ export default class RawTransactionsBatchesJob extends BaseJob {
         response.recipient == null ||
         utils.getDayJsObj(response.datetime) == null
       ) {
-        this.logger.error('response is invalid', {
-          rawTrxnId,
-        });
+        await this._handleUserTrxnCreateError(rawTrxn, transaction);
+        continue;
+      }
+
+      const userTransactionService = new UserTransactionService();
+      // TODO: FETCH UNCATEGORIZED SUB_CATEGORY AND THEN USE IT'S ID
+      try {
+        const newUserTransaction =
+          await userTransactionService.createUserTransaction(
+            {
+              user_id: rawTrxn.user_id,
+              sub_cat_id: 1, // uncategorized transaction id
+              amount: response.amount,
+              isIntAmount: false,
+              transaction_datetime: response.datetime,
+              recipient_name: response.recipient,
+              creation_source: this._getCreationSource(rawTrxn),
+              meta: response,
+            },
+            transaction,
+          );
+
+        // TODO: AFTER AUTO CATEGORIZATION IS DONE CHANGE THIS CODE
+
         await rawTrxn.update(
           {
-            status: RAW_TRANSACTION_STATUSES.FAILED,
+            status: RAW_TRANSACTION_STATUSES.PROCESSED,
+            transaction_id: newUserTransaction.id,
           },
           {
             transaction,
           },
         );
+      } catch (error) {
+        await this._handleUserTrxnCreateError(rawTrxn, transaction);
         continue;
       }
-      const userTransactionService = new UserTransactionService();
-      // TODO: FETCH UNCATEGORIZED SUB_CATEGORY AND THEN USE IT'S ID
-      const newUserTransaction =
-        await userTransactionService.createUserTransaction(
-          {
-            user_id: rawTrxn.user_id,
-            sub_cat_id: 1, // uncategorized transaction id
-            amount: response.amount,
-            isIntAmount: false,
-            transaction_datetime: response.datetime,
-            recipient_name: response.recipient,
-            creation_source: this._getCreationSource(rawTrxn),
-            meta: response,
-          },
-          transaction,
-        );
-
-      // TODO: AFTER AUTO CATEGORIZATION IS DONE CHANGE THIS CODE
-
-      const uncategorizedTransactionService =
-        new UncategorizedTransactionService();
-      await uncategorizedTransactionService.create(
-        newUserTransaction.id,
-        rawTrxn.user_id,
-        transaction,
-      );
-
-      await rawTrxn.update(
-        {
-          status: RAW_TRANSACTION_STATUSES.PROCESSED,
-          transaction_id: newUserTransaction.id,
-        },
-        {
-          transaction,
-        },
-      );
     }
+  }
+
+  async _handleUserTrxnCreateError(rawTrxn, transaction) {
+    this.logger.error(`response is invalid ${rawTrxn.id}`);
+
+    await rawTrxn.update(
+      {
+        status: RAW_TRANSACTION_STATUSES.FAILED,
+      },
+      {
+        transaction,
+      },
+    );
   }
 
   _getCreationSource(rawTrxn) {
