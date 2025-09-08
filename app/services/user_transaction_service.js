@@ -10,10 +10,12 @@ import config from '../config/config.js';
 import SubCategory from '../models/sub_category.js';
 import createHttpError from 'http-errors';
 import { HttpStatusCode } from 'axios';
+import SubCategoryService from './sub_category_service.js';
 
 export default class UserTransactionService {
   constructor() {
     this._logger = new LoggerFactory('UserTransactionService').logger;
+    this._subCategoryService = new SubCategoryService();
   }
 
   /**
@@ -44,41 +46,7 @@ export default class UserTransactionService {
         .toISOString();
     }
 
-    if (!sub_cat_id) {
-      // TODO: ADD REDIS CACHING
-      const uncategorizedSubCategory = await SubCategory.findOne({
-        attributes: ['id'],
-        where: {
-          name: config.UNCATEGORIZED_SUB_CAT_NAME,
-          user_id: { [Op.is]: null },
-        },
-        transaction: sqlTransaction,
-      });
-
-      if (!uncategorizedSubCategory) {
-        throw new createHttpError(HttpStatusCode.InternalServerError, {
-          errors: 'cannot create uncategorized transaction',
-        });
-      }
-      sub_cat_id = uncategorizedSubCategory.id;
-    } else {
-      // TODO: ADD REDIS CACHING
-      const subCat = await SubCategory.findOne({
-        attributes: ['id'],
-        where: {
-          id: sub_cat_id,
-          [Op.or]: [{ user_id }, { user_id: { [Op.is]: null } }],
-        },
-        transaction: sqlTransaction,
-      });
-
-      if (!subCat) {
-        throw new createHttpError(HttpStatusCode.InternalServerError, {
-          errors: 'cannot find sub_category',
-        });
-      }
-      sub_cat_id = subCat.id;
-    }
+    sub_cat_id = await this._setSubCatId(sub_cat_id, user_id, sqlTransaction);
 
     if (!recipient_name) {
       recipient_name = 'the anti-savings fund';
@@ -115,6 +83,40 @@ export default class UserTransactionService {
     );
 
     return newUserTransaction;
+  }
+
+  async _setSubCatId(subCatId, userId, sqlTransaction) {
+    if (!subCatId) {
+      const uncategorizedSubCategory =
+        await this._subCategoryService.getSubCategoryByNameAndUserId(
+          config.UNCATEGORIZED_SUB_CAT_NAME,
+          null,
+          sqlTransaction,
+        );
+
+      if (!uncategorizedSubCategory) {
+        throw new createHttpError(HttpStatusCode.InternalServerError, {
+          errors: 'cannot find uncategorized transaction',
+        });
+      }
+
+      return uncategorizedSubCategory.id;
+    }
+
+    // TODO: ADD REDIS CACHING
+    const subCat = await this._subCategoryService.getSubCategoryByNameAndUserId(
+      config.UNCATEGORIZED_SUB_CAT_NAME,
+      userId,
+      sqlTransaction,
+    );
+
+    if (!subCat) {
+      throw new createHttpError(HttpStatusCode.InternalServerError, {
+        errors: 'cannot find sub_category',
+      });
+    }
+
+    return subCat.id;
   }
 
   /**
@@ -165,27 +167,19 @@ export default class UserTransactionService {
         .toISOString();
     }
 
+    const updatedData = {};
     if (sub_cat_id) {
-      const subCat = await SubCategory.findOne({
-        attributes: ['id'],
-        where: {
-          id: sub_cat_id,
-          [Op.or]: [{ user_id }, { user_id: { [Op.is]: null } }],
-        },
-        transaction: sqlTransaction,
-      });
-
+      const subCat = await this._subCategoryService.getSubCategoryByIdAndUserId(
+        sub_cat_id,
+        user_id,
+        sqlTransaction,
+      );
       if (!subCat) {
         throw new createHttpError(HttpStatusCode.InternalServerError, {
           errors: 'cannot find sub_category',
         });
       }
-      sub_cat_id = subCat.id;
-    }
 
-    const updatedData = {};
-
-    if (sub_cat_id) {
       updatedData.sub_cat_id = sub_cat_id;
     }
 

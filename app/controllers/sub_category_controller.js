@@ -5,6 +5,7 @@ import { LoggerFactory } from '../lib/logger.js';
 import redis from '../lib/redis.js';
 import utils from '../lib/utils.js';
 import SubCategoryService from '../services/sub_category_service.js';
+import config from '../config/config.js';
 
 class SubCategoryController {
   constructor() {
@@ -76,7 +77,7 @@ class SubCategoryController {
         cacheKey,
         JSON.stringify(responseData),
         'EX',
-        86400, // 24 hours in seconds
+        config.times.hours_24_in_s,
       );
 
       return res.status(HttpStatusCode.Ok).json(responseData);
