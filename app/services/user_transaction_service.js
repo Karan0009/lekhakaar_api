@@ -87,7 +87,7 @@ export default class UserTransactionService {
     if (
       !user_id ||
       amount == null ||
-      amount == 0 ||
+      amount <= 0 ||
       !creation_source ||
       !Object.values(CREATION_SOURCE).includes(creation_source) ||
       !meta

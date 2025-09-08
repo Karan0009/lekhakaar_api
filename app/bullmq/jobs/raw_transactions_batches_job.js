@@ -333,6 +333,7 @@ export default class RawTransactionsBatchesJob extends BaseJob {
       if (
         !response ||
         response?.amount == null ||
+        response?.amount <= 0 ||
         response?.datetime == null ||
         response.recipient == null ||
         utils.getDayJsObj(response.datetime) == null
