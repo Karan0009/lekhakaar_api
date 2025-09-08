@@ -375,6 +375,9 @@ export default class RawTransactionsBatchesJob extends BaseJob {
             transaction,
           },
         );
+
+        const cacheKeyPrefix = `transactions:${rawTrxn.user_id}:`;
+        await utils.deleteAllKeysWithPrefix(cacheKeyPrefix);
       } catch (error) {
         this.logger.error(
           `error in creating user transaction for rawTrxn ${rawTrxn.id}`,
