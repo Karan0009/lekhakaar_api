@@ -375,6 +375,7 @@ export default class RawTransactionsBatchesJob extends BaseJob {
         continue;
       }
     }
+    this.logger.info('processed processedBatches');
   }
 
   async _handleUserTrxnCreateError(rawTrxn, transaction) {
