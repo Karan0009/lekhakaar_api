@@ -46,7 +46,7 @@ export default class UserTransactionService {
         .toISOString();
     }
 
-    sub_cat_id = await this._setSubCatId(sub_cat_id, user_id, sqlTransaction);
+    sub_cat_id = await this._setSubCatId(sub_cat_id, user_id);
 
     if (!recipient_name) {
       recipient_name = 'the anti-savings fund';
@@ -85,13 +85,12 @@ export default class UserTransactionService {
     return newUserTransaction;
   }
 
-  async _setSubCatId(subCatId, userId, sqlTransaction) {
+  async _setSubCatId(subCatId, userId) {
     if (!subCatId) {
       const uncategorizedSubCategory =
         await this._subCategoryService.getSubCategoryByNameAndUserId(
           config.UNCATEGORIZED_SUB_CAT_NAME,
           null,
-          sqlTransaction,
         );
 
       if (!uncategorizedSubCategory) {
@@ -103,11 +102,9 @@ export default class UserTransactionService {
       return uncategorizedSubCategory.id;
     }
 
-    // TODO: ADD REDIS CACHING
-    const subCat = await this._subCategoryService.getSubCategoryByNameAndUserId(
-      config.UNCATEGORIZED_SUB_CAT_NAME,
+    const subCat = await this._subCategoryService.getSubCategoryByIdAndUserId(
+      subCatId,
       userId,
-      sqlTransaction,
     );
 
     if (!subCat) {

@@ -143,7 +143,7 @@ export default class SubCategoryService {
    */
   async getSubCategoryByIdAndUserId(id, userId, sqlTransaction = null) {
     try {
-      const redisKey = `sub_cat_name_user:${id}:${userId ?? ''}`;
+      const redisKey = `sub_cat_id_user:${id}:${userId ?? ''}`;
       const cachedSubCat = await redis.get(redisKey);
       if (cachedSubCat) {
         return JSON.parse(cachedSubCat);
